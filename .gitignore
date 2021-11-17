@@ -3,6 +3,7 @@
 # Edit at https://www.gitignore.io/?templates=git,django,visualstudiocode
 
 .secrets
+*.csv
 ### Django ###
 *.log
 *.pot

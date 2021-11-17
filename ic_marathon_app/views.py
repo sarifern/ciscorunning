@@ -161,9 +161,16 @@ def add_workout_fs(request):
         form = FSWorkoutForm(request.POST, request.FILES)
         form.instance.belongs_to = request.user.profile
         if form.is_valid():
+            # add table
+            if form.instance.intensity == "light":
+                factor = 0.1
+            elif form.instance.intensity == "medium":
+                factor = 0.2
+            elif form.instance.intensity == "high":
+                factor = 0.3
             form.instance.distance = float_to_decimal(
                 (form.instance.time.hour * 60 + form.instance.time.minute) /
-                12)
+                12 * factor)
             form.save()
             new_badges = check_badges(request.user)
             if new_badges:

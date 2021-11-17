@@ -25,10 +25,21 @@ CATEGORY_CHOICES = ((BEGINNERRUNNER,
                      'Beginner Runner'), (RUNNER, 'Runner'), (BIKER, 'Biker'),
                     (DUATHLONER, 'Duathloner'), (FREESTYLER, 'Freestyler'))
 
+# Intensity choices
+
+LIGHT = "light"
+MEDIUM = "medium"
+HIGH = "high"
+
+INTENSITY_CHOICES = ((LIGHT,"Light"),
+(MEDIUM,"Medium"),(HIGH,"High"))
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     user_goal = models.BooleanField(default=False)
+    user_goal_km = models.DecimalField(default=42.00,
+                                   max_digits=10,
+                                   decimal_places=2)
     avatar = models.CharField(max_length=400, blank=False)
     cec = models.CharField(max_length=30, blank=True)
     distance = models.DecimalField(default=0.00,
@@ -47,7 +58,7 @@ class Profile(models.Model):
 class ProfileForm(ModelForm):
     class Meta:
         model = Profile
-        fields = ['cec', 'category']
+        fields = ['cec', 'user_goal_km', 'category']
 
 
 #Expand the model for the special WorkoutForm (free style)
@@ -74,6 +85,11 @@ class Workout(models.Model):
                             help_text='Workout in minutes',
                             validators=[validate_workout_time],
                             default='00:00')
+    intensity = models.CharField(verbose_name="Intensity",
+                                max_length=10,
+                                choices=INTENSITY_CHOICES,
+                                blank=False,
+                                default=MEDIUM)
 
 
 class WorkoutForm(ModelForm):
@@ -89,7 +105,7 @@ class WorkoutForm(ModelForm):
 class FSWorkoutForm(ModelForm):
     class Meta:
         model = Workout
-        fields = ['date_time', 'time', 'photo_evidence']
+        fields = ['date_time','time', 'intensity', 'photo_evidence']
         widgets = {
             'date_time': DateTimePickerInput(),
             'time': TimePickerInput(),
@@ -102,7 +118,7 @@ def delete_workout(sender, instance, **kwargs):
     profile = instance.belongs_to
     profile.distance -= instance.distance
 
-    if profile.distance < 42.0:
+    if profile.distance < profile.user_goal_km:
         profile.user_goal = False
     profile.save()
 
@@ -121,6 +137,6 @@ def save_workout(sender, instance, **kwargs):
     profile.distance += instance.distance
     if profile.distance >= 84.0 and profile.category == "beginnerrunner":
         profile.category = "runner"
-    if profile.distance >= 42.0:
+    if profile.distance >= profile.user_goal_km:
         profile.user_goal = True
     profile.save()
