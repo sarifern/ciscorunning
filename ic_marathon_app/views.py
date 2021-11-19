@@ -163,11 +163,11 @@ def add_workout_fs(request):
         if form.is_valid():
             # add table
             if form.instance.intensity == "light":
-                factor = 0.1
+                factor = 0.7
             elif form.instance.intensity == "medium":
-                factor = 0.2
+                factor = 0.85
             elif form.instance.intensity == "high":
-                factor = 0.3
+                factor = 1
             form.instance.distance = float_to_decimal(
                 (form.instance.time.hour * 60 + form.instance.time.minute) /
                 12 * factor)
