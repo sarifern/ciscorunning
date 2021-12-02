@@ -24,27 +24,38 @@
 
         <form method="POST" id="workoutForm" enctype="multipart/form-data">
             {% csrf_token %} {{ form.non_field_errors }}
-
+            {% if form.errors %}
+            <div class="alert alert-error">
+                <button type="button" class="close" data-dismiss="alert"><span class="icon-close"></span></button>
+                
+                    {% for field in form %} 
+                        {% if field.errors %}
+                        {{ field.label }}: {{ field.errors|striptags }}
+                        {% endif %}
+                    {% endfor %}
+               
+                </div>
+            {% endif %}
             <div class="form-group text-normal">
                 <div class=" qtr-padding-bottom ">
-                    <label>Date of workout</label> {{ form.date_time }} {{form.date_time.errors}}
+                    <label>Date of workout</label> {{ form.date_time }} 
                 </div>
             </div>
 
             <div class="form-group text-normal">
                 <div class="qtr-padding-bottom ">
-                    <label>Duration(hrs/min)</label> {{ form.time }} {{form.time.errors}}
+                    <label>Duration(hrs/min)</label> {{ form.time }}
                 </div>
             </div>
             <div class="form-group text-normal">
                 <div class="qtr-padding-bottom ">
-                    <label>Intensity</label> {{ form.intensity }} {{form.intensity.errors}}
+                    <label>Intensity</label> {{ form.intensity }} 
                 </div>
             </div>
 
             <div class="form-group text-normal">
                 <div class=" qtr-padding-bottom ">
-                    <label>Screenshot</label> {{ form.photo_evidence }} {{form.photo_evidence.errors}}
+                    <label>Screenshot</label> {{ form.photo_evidence }} 
                 </div>
             </div>
 
