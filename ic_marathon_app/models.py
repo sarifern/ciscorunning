@@ -1,6 +1,8 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
+from decimal import *
 from django.db.models.signals import post_save, post_delete
 from django.core.files.storage import default_storage
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -11,7 +13,7 @@ from django.dispatch import receiver
 from django_select2.forms import Select2Widget
 from bootstrap_datepicker_plus import TimePickerInput, DateTimePickerInput
 import uuid
-from .validators import validate_file_size, validate_workout_time, validate_distance, validate_date
+from .validators import validate_file_size, validate_workout_time, validate_distance, validate_date, validate_min_goal
 import q
 
 # Create your models here.
@@ -39,7 +41,8 @@ class Profile(models.Model):
     user_goal = models.BooleanField(default=False)
     user_goal_km = models.DecimalField(default=42.00,
                                    max_digits=10,
-                                   decimal_places=2)
+                                   decimal_places=2,
+                                   validators=[validate_min_goal])
     avatar = models.CharField(max_length=400, blank=False)
     cec = models.CharField(max_length=30, blank=True)
     distance = models.DecimalField(default=0.00,

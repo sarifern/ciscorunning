@@ -64,7 +64,7 @@ source env/bin/activate
 
 ``` 
 env LDFLAGS="-I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib" pip install psycopg2==2.8.3
-pip install -r requirements.txt --use-feature=2020-resolver
+pip install -r requirements.txt 
 ``` 
 
 8. Please add the .secrets and local-settings.py files. Ask for them to the admins lurifern@cisco.com

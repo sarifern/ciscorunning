@@ -20,9 +20,10 @@
                     <span class="text-size-18 text-center-xs-down">{{user.first_name}} {{user.last_name}} | {{user.profile.cec}}</span>
                 </div>
                 <div class="flex flex-center">
-                    <span class="text-size-14 text-gray-700 text-capitalize">Category - {% if user.profile.category == "beginnerrunner"%} Beginner Runner{% else %} {{user.profile.category }} {% endif %}
+                    <span class="text-size-14 text-gray-700 text-capitalize">Category - {% if user.profile.category == "beginnerrunner"%} Beginner Runner{% else %} {{user.profile.category }} {% endif %} | My Goal - {{user.profile.user_goal_km}}km
                                         </span>
                 </div>
+                
                 <br>
                 <div class="flex flex-center ">
                     <span class="badge-wrapper">

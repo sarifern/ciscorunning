@@ -175,12 +175,16 @@ def add_workout_fs(request):
             new_badges = check_badges(request.user)
             if new_badges:
                 try:
-                    WTAPI.messages.create(
-                        roomId=os.environ.get('WT_ROOMID'),
-                        text="Congratulations " + request.user.first_name +
-                        " (" + request.user.profile.cec +
-                        ") for achieving a new badge!\n Keep it up!",
-                        files=[new_badges[-1].image.url])
+                    for badge in new_badges:
+                        if badge.slug == "ownK":
+                            WTAPI.messages.create(
+                                roomId=os.environ.get('WT_ROOMID'),
+                                text="Congratulations " +
+                                request.user.first_name + " (" +
+                                request.user.profile.cec +
+                                ") for achieving your badge!\n Keep it up!",
+                                files=[badge.image.url])
+                    pass
                 except ApiError:
                     pass
                 return render(request, 'ic_marathon_app/add_workoutfs.html', {
@@ -218,12 +222,15 @@ def add_workout(request):
             new_badges = check_badges(request.user)
             if new_badges:
                 try:
-                    WTAPI.messages.create(
-                        roomId=os.environ.get('WT_ROOMID'),
-                        text="Congratulations " + request.user.first_name +
-                        " (" + request.user.profile.cec +
-                        ") for achieving a new badge!\n Keep it up!",
-                        files=[new_badges[-1].image.url])
+                    for badge in new_badges:
+                        if badge.slug == "ownK":
+                            WTAPI.messages.create(
+                                roomId=os.environ.get('WT_ROOMID'),
+                                text="Congratulations " +
+                                request.user.first_name + " (" +
+                                request.user.profile.cec +
+                                ") for achieving your badge!\n Keep it up!",
+                                files=[badge.image.url])
                 except ApiError:
                     pass
                 return render(request, 'ic_marathon_app/add_workout.html', {
@@ -399,6 +406,10 @@ def check_badges(user):
             new_badges.append(new_badge)
     if distance >= 168.0:
         new_badge = award_badge(user=user, slug='168K')
+        if new_badge:
+            new_badges.append(new_badge)
+    if distance >= user.profile.user_goal_km:
+        new_badge = award_badge(user=user, slug="ownK")
         if new_badge:
             new_badges.append(new_badge)
 

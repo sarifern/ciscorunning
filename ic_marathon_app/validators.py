@@ -38,3 +38,10 @@ def validate_distance(value):
             "The maximum distance value for a workout is 250 km")
     else:
         return value
+
+def validate_min_goal(value):
+    if float(value.real) >= 21.00:
+        return value
+    else:
+        raise ValidationError(
+            "The minimum distance for a personal goal is 21K")

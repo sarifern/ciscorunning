@@ -1,6 +1,7 @@
 from django.contrib.staticfiles.storage import staticfiles_storage
 from badgify.models import Award, Badge
-
+Badge.objects.get_or_create(slug="ownK", name="My milestone", description="Congratulations! You achieved your goal",
+                            image=staticfiles_storage.open('img/own.jpg'))
 Badge.objects.get_or_create(slug="168K", name="168K Milestone Achieved", description="Impossible is nothing! You set a four marathon record",
                             image=staticfiles_storage.open('img/168k.jpg'))
 Badge.objects.get_or_create(slug="126K", name="126K Milestone Achieved", description="Insane! You set a three marathon record",
