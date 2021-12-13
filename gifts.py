@@ -98,6 +98,7 @@ for cec in cecs_who_joined:
         profile = Profile.objects.get(cec=cec)
         profile.distance += 5
         profile.save()
+        print(f"user {cec} has been granted the gift")
         check_badges(profile.user)
     except MultipleObjectsReturned:
         #check profile manually
