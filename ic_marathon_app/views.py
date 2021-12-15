@@ -435,7 +435,9 @@ def strip_badges(user):
         get_award(user, slug='21K').delete()
     if distance < 10.0 and get_award(user, slug='10K'):
         get_award(user, slug='10K').delete()
-
+    if distance < user.profile.user_goal_km and get_award(user, slug='ownK'):
+        get_award(user, slug='ownK').delete()
+    
 
 def award_badge(user, slug):
     """Award new badge if applicable
