@@ -3,21 +3,13 @@ from django.core.exceptions import MultipleObjectsReturned
 from ic_marathon_app.views import check_badges
 
 cecs_who_joined = [
-"ksookdeo",
 "alegarc2",
 "baraiza",
-"vbustama",
-"lramosba",
-"igalanva",
-"bzendeja",
-"sarifern",
-"dfeito",
-"carlvarg",
-"kagodine",
-"tlopezgo",
-"josegon5",
-"arrosale",
-"flugo"
+"alberthe",
+"flugo",
+"drincond",
+"alsalvad",
+"armaldon"
 ]
 
 for cec in cecs_who_joined:
