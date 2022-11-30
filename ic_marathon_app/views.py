@@ -18,13 +18,13 @@ import pytz as tz
 
 WTAPI = WebexTeamsAPI(access_token=os.environ.get('WT_TOKEN'))
 
-DATE_START = datetime(2021, 12, 12, 1, 0,
+DATE_START = datetime(2022, 12, 12, 1, 0,
                       0).replace(tzinfo=tz.timezone('America/Mexico_City'))
-DATE_END = datetime(2022, 1, 7, 0, 0,
+DATE_END = datetime(2023, 1, 7, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
 
 if os.environ.get('DEBUG_PREF') != 'False':
-    DATE = datetime(2021, 12, 15, 0, 0,
+    DATE = datetime(2022, 12, 15, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
 else:
     DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
