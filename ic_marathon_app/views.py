@@ -23,9 +23,7 @@ DATE_START = datetime(2022, 12, 12, 1, 0,
 DATE_END = datetime(2023, 1, 7, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
 
-if os.environ.get('DEBUG_PREF') != 'False':
-    DATE = datetime(2022, 12, 15, 0, 0,
-                    0).replace(tzinfo=tz.timezone('America/Mexico_City'))
+
 
     
 
@@ -45,6 +43,9 @@ def login(request):
         rendered template -- Rendered template depending on successful or failed auth.
     """
     DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
+    if os.environ.get('DEBUG_PREF') != 'False':
+        DATE = datetime(2022, 12, 15, 0, 0,
+                    0).replace(tzinfo=tz.timezone('America/Mexico_City'))
     if DATE >= DATE_START and DATE <= DATE_END:
         ACTIVE = True
     else:
