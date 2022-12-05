@@ -42,6 +42,11 @@ def login(request):
     Returns:
         rendered template -- Rendered template depending on successful or failed auth.
     """
+    return render(request, 'registration/login.html')
+
+
+@login_required
+def home(request):
     DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
     if os.environ.get('DEBUG_PREF') == 'True':
         # this is on BETA bypass
@@ -51,11 +56,6 @@ def login(request):
         ACTIVE = True
     else:
         ACTIVE = False
-    return render(request, 'registration/login.html')
-
-
-@login_required
-def home(request):
     if request.user.profile.cec:
         return my_workouts(request)
     else:
