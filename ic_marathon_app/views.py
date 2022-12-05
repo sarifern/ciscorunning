@@ -27,7 +27,7 @@ DATE_END = datetime(2023, 1, 7, 0, 0,
 
     
 
-ACTIVE = False
+
 
 
 # Create your views here.
@@ -53,11 +53,11 @@ def home(request):
         DATE = datetime(2022, 12, 15, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
     if DATE >= DATE_START and DATE <= DATE_END:
-        ACTIVE = True
+        active = True
     else:
-        ACTIVE = False
+        active = False
     if request.user.profile.cec:
-        return my_workouts(request)
+        return my_workouts(request,active)
     else:
         return profile_wizard(request)
 
@@ -112,7 +112,7 @@ def my_profile(request):
 
 
 @login_required
-def my_workouts(request):
+def my_workouts(request,active):
     """Returns the Profile's workouts as a table, the profile's awards, and when the challenge is active, it enables 
     the Workout Add button (with the ENV variable as STAGE or PROD)
 
@@ -125,7 +125,7 @@ def my_workouts(request):
         {
         'workouts': workouts_table,
         'earned_awards': awards,
-        'active': ACTIVE,
+        'active': active,
         }
     """
     try:
@@ -142,7 +142,7 @@ def my_workouts(request):
         request, 'ic_marathon_app/my_workouts.html', {
             'workouts': workouts_table,
             'earned_awards': awards,
-            'active': ACTIVE,
+            'active': active,
             'category': request.user.profile.category
         })
 
