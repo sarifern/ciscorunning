@@ -26,18 +26,11 @@ DATE_END = datetime(2023, 1, 7, 0, 0,
 if os.environ.get('DEBUG_PREF') != 'False':
     DATE = datetime(2022, 12, 15, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
-else:
-    DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
+
+    
 
 ACTIVE = False
-if os.environ.get('ACTIVE_ENV') != 'False':
-    # Check time period DIC 12 to Jan 6
-    if DATE >= DATE_START and DATE <= DATE_END:
-        ACTIVE = True
-    else:
-        ACTIVE = False
-else:
-    DATE = DATE_END
+
 
 # Create your views here.
 
@@ -51,6 +44,11 @@ def login(request):
     Returns:
         rendered template -- Rendered template depending on successful or failed auth.
     """
+    DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
+    if DATE >= DATE_START and DATE <= DATE_END:
+        ACTIVE = True
+    else:
+        ACTIVE = False
     return render(request, 'registration/login.html')
 
 
