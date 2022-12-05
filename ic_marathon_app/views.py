@@ -43,7 +43,8 @@ def login(request):
         rendered template -- Rendered template depending on successful or failed auth.
     """
     DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
-    if os.environ.get('DEBUG_PREF') != 'False':
+    if os.environ.get('DEBUG_PREF') == 'True':
+        # this is on BETA bypass
         DATE = datetime(2022, 12, 15, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
     if DATE >= DATE_START and DATE <= DATE_END:
