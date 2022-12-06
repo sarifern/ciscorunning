@@ -58,7 +58,7 @@ def home(request):
     else:
         ACTIVE = False
     if request.user.profile.cec:
-        return my_workouts(request,ACTIVE)
+        return my_workouts(request)
     else:
         return profile_wizard(request)
 
@@ -114,7 +114,7 @@ def my_profile(request):
 
 
 @login_required
-def my_workouts(request,active):
+def my_workouts(request):
     """Returns the Profile's workouts as a table, the profile's awards, and when the challenge is active, it enables 
     the Workout Add button (with the ENV variable as STAGE or PROD)
 
@@ -130,6 +130,7 @@ def my_workouts(request,active):
         'active': active,
         }
     """
+    global ACTIVE
     try:
         workouts = Workout.objects.filter(
             belongs_to=request.user.profile).order_by('date_time')
@@ -144,7 +145,7 @@ def my_workouts(request,active):
         request, 'ic_marathon_app/my_workouts.html', {
             'workouts': workouts_table,
             'earned_awards': awards,
-            'active': active,
+            'active': ACTIVE,
             'category': request.user.profile.category
         })
 
