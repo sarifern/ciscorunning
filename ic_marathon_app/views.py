@@ -23,8 +23,8 @@ DATE_START = datetime(2022, 12, 12, 1, 0,
 DATE_END = datetime(2023, 1, 7, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
 
-
-
+ACTIVE = False
+DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
     
 
 
@@ -47,17 +47,18 @@ def login(request):
 
 @login_required
 def home(request):
+    global DATE, ACTIVE
     DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
     if os.environ.get('DEBUG_PREF') == 'True':
         # this is on BETA bypass
         DATE = datetime(2022, 12, 15, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
     if DATE >= DATE_START and DATE <= DATE_END:
-        active = True
+        ACTIVE = True
     else:
-        active = False
+        ACTIVE = False
     if request.user.profile.cec:
-        return my_workouts(request,active)
+        return my_workouts(request)
     else:
         return profile_wizard(request)
 
@@ -83,6 +84,7 @@ def my_profile(request):
         'remaining_days': remaining_days.days,
         }
     """
+    global DATE, DATE_END, ACTIVE
     # need workouts count, distance count, remaining days
     try:
         workouts = Workout.objects.filter(belongs_to=request.user.profile)
@@ -112,7 +114,7 @@ def my_profile(request):
 
 
 @login_required
-def my_workouts(request,active):
+def my_workouts(request):
     """Returns the Profile's workouts as a table, the profile's awards, and when the challenge is active, it enables 
     the Workout Add button (with the ENV variable as STAGE or PROD)
 
@@ -128,6 +130,7 @@ def my_workouts(request,active):
         'active': active,
         }
     """
+    global ACTIVE
     try:
         workouts = Workout.objects.filter(
             belongs_to=request.user.profile).order_by('date_time')
@@ -142,7 +145,7 @@ def my_workouts(request,active):
         request, 'ic_marathon_app/my_workouts.html', {
             'workouts': workouts_table,
             'earned_awards': awards,
-            'active': active,
+            'active': ACTIVE,
             'category': request.user.profile.category
         })
 
