@@ -18,9 +18,9 @@ import pytz as tz
 
 WTAPI = WebexTeamsAPI(access_token=os.environ.get('WT_TOKEN'))
 
-DATE_START = datetime(2022, 12, 12, 1, 0,
+DATE_START = datetime(2023, 12, 12, 1, 0,
                       0).replace(tzinfo=tz.timezone('America/Mexico_City'))
-DATE_END = datetime(2023, 1, 7, 0, 0,
+DATE_END = datetime(2024, 1, 7, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
 
 ACTIVE = False
@@ -51,7 +51,7 @@ def home(request):
     DATE = datetime.now().replace(tzinfo=tz.timezone('America/Mexico_City'))
     if os.environ.get('DEBUG_PREF') == 'True':
         # this is on BETA bypass
-        DATE = datetime(2022, 12, 15, 0, 0,
+        DATE = datetime(2023, 12, 15, 0, 0,
                     0).replace(tzinfo=tz.timezone('America/Mexico_City'))
     if DATE >= DATE_START and DATE <= DATE_END:
         ACTIVE = True
