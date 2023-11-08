@@ -1,23 +1,13 @@
-{% extends "ic_marathon_app/base.html" %}
-{% load staticfiles %}
-{% block title %}
-  {{ badge.name }}
-{% endblock %}
-
-{% block content %}
-    <h1>{{ badge.name }}</h1>
-    <img class="w3-round no-padding avatar" src="{{ badge.image.url }}">
-    <p><em>{{ badge.description }}</em></p>
-    <p><strong>{{ badge.users_count }} users</strong>:</p>
-    <ul>
-      
-      {% comment %}
-        insert when the badge was awarded
-      {% endcomment %}
-        
-        {% for user in awarded_users %}
-        <li>{{ user.profile.cec }}</li>
-        {% endfor %}
-    </ul>
-    {% include "_pagination.html" %}
-{% endblock %}
+{% extends "ic_marathon_app/base.html" %} {% load static %} {% block title %} {{
+badge.name }} {% endblock %} {% block content %}
+<h1>{{ badge.name }}</h1>
+<img class="w3-round no-padding avatar" src="{{ badge.image.url }}" />
+<p><em>{{ badge.description }}</em></p>
+<p><strong>{{ badge.users_count }} users</strong>:</p>
+<ul>
+  {% comment %} insert when the badge was awarded {% endcomment %} {% for user
+  in awarded_users %}
+  <li>{{ user.profile.cec }}</li>
+  {% endfor %}
+</ul>
+{% include "_pagination.html" %} {% endblock %}

@@ -11,7 +11,7 @@ from django.forms import ModelForm
 from django import forms
 from django.dispatch import receiver
 from django_select2.forms import Select2Widget
-from bootstrap_datepicker_plus import TimePickerInput, DateTimePickerInput
+from bootstrap_datepicker_plus.widgets import TimePickerInput, DateTimePickerInput
 import uuid
 from .validators import validate_file_size, validate_workout_time, validate_distance, validate_date, validate_min_goal
 import q
