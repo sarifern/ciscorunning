@@ -1,135 +1,118 @@
 <!-- my_profile.html -->
 
-{% extends 'ic_marathon_app/base.html' %} {% block title %} My Profile {% endblock %} {% block content %} {% load static %}
+{% extends 'ic_marathon_app/base.html' %} {% block title %} My Profile {%
+endblock %} {% block content %} {% load static %}
 
 <div class="row">
-    <div class="col-xl-8">
-
-        <div class="panel panel--loose panel--raised base-margin-bottom">
-
-
-            <div class="text-uppercase text-size-14">My Profile</div>
-            <hr>
-            <div class="section no-padding">
-
-
-                <div class="flex flex-center">
-                    <img class="image-size-96" src={{user.profile.avatar}}><br>
-                </div>
-                <div class="flex flex-center">
-                    <span class="text-size-18 text-center-xs-down">{{user.first_name}} {{user.last_name}} | {{user.profile.cec}}</span>
-                </div>
-                <div class="flex flex-center">
-                    <span class="text-size-14 text-gray-700 text-capitalize">Category - {% if user.profile.category == "beginnerrunner"%} Beginner Runner{% else %} {{user.profile.category }} {% endif %} | My Goal - {{user.profile.user_goal_km}}km
-                                        </span>
-                </div>
-                
-                <br>
-                <div class="flex flex-center ">
-                    <span class="badge-wrapper">
-                        <span class="icon-acessibility icon-size-32"></span>
-                        <span class="badge badge--tertiary">{{position}}</span>
-                    </span>
-                </div>
-                <div class="flex flex-center ">
-                    <span class="text-size-14 text-gray-700 text-capitalize">Current Position</span>
-                </div>
-
-
-            </div>
-
-
+  <div class="col-xl-8">
+    <div class="panel panel--loose panel--raised base-margin-bottom">
+      <div class="text-uppercase text-size-14">My Profile</div>
+      <hr />
+      <div class="section no-padding">
+        <div class="flex flex-center">
+          <img class="image-size-96" src="{{user.profile.avatar}}" /><br />
+        </div>
+        <div class="flex flex-center">
+          {% if user.first_name!="" and user.last_name!="" %}
+          <span class="text-size-18 text-center-xs-down"
+            >{{user.first_name}} {{user.last_name}} | {{user.profile.cec}}</span
+          >
+          {% else %}
+          <span class="text-size-18 text-center-xs-down"
+            >{{user.username}} | {{user.profile.cec}}</span
+          >
+          {% endif %}
+        </div>
+        <div class="flex flex-center">
+          <span class="text-size-14 text-gray-700 text-capitalize"
+            >Category - {% if user.profile.category == "beginnerrunner"%}
+            Beginner Runner{% else %} {{user.profile.category }} {% endif %} |
+            My Goal - {{user.profile.user_goal_km}}km
+          </span>
         </div>
 
+        <br />
+        <div class="flex flex-center">
+          <span class="badge-wrapper">
+            <span class="icon-acessibility icon-size-32"></span>
+            <span class="badge badge--tertiary">{{position}}</span>
+          </span>
+        </div>
+        <div class="flex flex-center">
+          <span class="text-size-14 text-gray-700 text-capitalize"
+            >Current Position</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
 
-
-
-
-
+  <div class="col-xl-4">
+    <div class="panel panel--loose panel--raised base-margin-bottom">
+      <div class="text-uppercase text-size-14">My Awards</div>
+      <hr />
+      <div class="row flex-center flex-middle">
+        {% if earned_awards%} {% for award in earned_awards %}
+        <img
+          class="w3-round no-padding"
+          height="125"
+          width="125"
+          src="{{ award.badge.image.url }}"
+        />
+        {% endfor %} {% endif %}
+      </div>
     </div>
 
-    <div class="col-xl-4">
+    <div class="panel panel--loose panel--raised base-margin-bottom">
+      <div class="text-uppercase text-size-14">My Statistics</div>
+      <hr />
 
-        <div class="panel panel--loose panel--raised base-margin-bottom">
-
-            <div class="text-uppercase text-size-14">My Awards</div>
-            <hr>
-            <div class="row flex-center flex-middle">
-                {% if earned_awards%} {% for award in earned_awards %}
-                <img class="w3-round no-padding" height="125" width="125" src="{{ award.badge.image.url }}"> {% endfor %} {% endif %}
-
-            </div>
+      <div>
+        <div class="subheader">Kilometers</div>
+        <div
+          class="progressbar progressbar--secondary progressbar--large"
+          data-percentage="{{aggr_distance_per}}"
+        >
+          <div class="progressbar__fill"></div>
+          <div class="progressbar__label">{{aggr_distance}}</div>
         </div>
 
-        <div class="panel panel--loose panel--raised base-margin-bottom">
-
-            <div class="text-uppercase text-size-14">My Statistics</div>
-            <hr>
-
-            <div>
-
-
-
-                <div class="subheader">Kilometers</div>
-                <div class="progressbar progressbar--secondary progressbar--large" data-percentage="{{aggr_distance_per}}">
-                    <div class="progressbar__fill"></div>
-                    <div class="progressbar__label">{{aggr_distance}}</div>
-                </div>
-
-                <div class="subheader">Workouts</div>
-                <div class="progressbar progressbar--large progressbar--success" data-percentage="{{workout_count}}">
-                    <div class="progressbar__fill"></div>
-                    <div class="progressbar__label">{{workout_count}}</div>
-                </div>
-
-
-
-
-
-            </div>
-
+        <div class="subheader">Workouts</div>
+        <div
+          class="progressbar progressbar--large progressbar--success"
+          data-percentage="{{workout_count}}"
+        >
+          <div class="progressbar__fill"></div>
+          <div class="progressbar__label">{{workout_count}}</div>
         </div>
-        <div class="panel panel--loose panel--raised base-margin-bottom">
-
-            <div class="text-uppercase text-size-14">REMAINING DAYS </div>
-            <hr>
-            <div class="section no-padding">
-
-
-                <div class="flex flex-center">
-
-
-                    <div class="gauge gauge--primary" data-percentage="{{remaining_days_per}}">
-                        <div class="gauge__circle">
-                            <div class="mask full">
-                                <div class="fill"></div>
-                            </div>
-                            <div class="mask half">
-                                <div class="fill"></div>
-                                <div class="fill fix"></div>
-                            </div>
-                        </div>
-                        <div class="gauge__inset">
-                            <div class="gauge__percentage">{{remaining_days}}</div>
-                        </div>
-                    </div>
-
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-
-
-
-
-
+      </div>
     </div>
+    <div class="panel panel--loose panel--raised base-margin-bottom">
+      <div class="text-uppercase text-size-14">REMAINING DAYS</div>
+      <hr />
+      <div class="section no-padding">
+        <div class="flex flex-center">
+          <div
+            class="gauge gauge--primary"
+            data-percentage="{{remaining_days_per}}"
+          >
+            <div class="gauge__circle">
+              <div class="mask full">
+                <div class="fill"></div>
+              </div>
+              <div class="mask half">
+                <div class="fill"></div>
+                <div class="fill fix"></div>
+              </div>
+            </div>
+            <div class="gauge__inset">
+              <div class="gauge__percentage">{{remaining_days}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-
-    {% endblock %}
+  {% endblock %}
+</div>

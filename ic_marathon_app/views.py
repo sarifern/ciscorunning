@@ -1,5 +1,4 @@
-from social_django.views import _do_login
-from social_core.actions import do_auth, do_complete, do_disconnect
+from allauth.socialaccount.models import SocialAccount
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from .models import ProfileForm, Profile, Workout, WorkoutForm, FSWorkoutForm
@@ -11,7 +10,7 @@ from django_tables2.config import RequestConfig
 from django_tables2.paginators import LazyPaginator
 from webexteamssdk import WebexTeamsAPI
 from webexteamssdk import ApiError
-from decimal import *
+import decimal
 import itertools
 import os
 import pytz as tz
@@ -57,9 +56,22 @@ def home(request):
         ACTIVE = True
     else:
         ACTIVE = False
-    if request.user.profile.cec:
-        return my_workouts(request)
-    else:
+    try:
+        
+        if request.user.profile.cec:
+            return my_workouts(request)
+        else:
+            return profile_wizard(request)
+    except ObjectDoesNotExist:
+        try:
+            account_picture  = SocialAccount.objects.get(user=request.user).extra_data.get("picture","")
+        except ObjectDoesNotExist:
+            account_picture= "https://scontent.fmex5-1.fna.fbcdn.net/v/t1.30497-1/84628273_176159830277856_972693363922829312_n.jpg?stp=c15.0.50.50a_cp0_dst-jpg_p50x50&_nc_cat=1&ccb=1-7&_nc_sid=810bd0&_nc_ohc=KBzs914Ok5UAX_kECCO&_nc_ht=scontent.fmex5-1.fna&edm=AHgPADgEAAAA&oh=00_AfB8FoQLg44f1goI2dEyRXsK4kZiVFbTph6AAWP6vDvXXA&oe=65734F99"
+        profile = Profile.objects.get_or_create(user=request.user)[0]
+        profile.avatar = account_picture
+        profile.save()
+        request.user.profile = profile
+        request.user.save()
         return profile_wizard(request)
 
 
@@ -478,35 +490,16 @@ def get_award(user, slug):
         return None
 
 
-NAMESPACE = 'social'
-REDIRECT_FIELD_NAME = 'next'
-
-
-def complete(request, backend, *args, **kwargs):
-    """Authentication complete view OVERRIDE
-
-    Arguments:
-        request {Request} -- Request from Browser
-        backend {string} -- Authentication Backend
-
-    """
-    return do_complete(request.backend,
-                       _do_login,
-                       user=None,
-                       redirect_name=REDIRECT_FIELD_NAME,
-                       request=request,
-                       *args,
-                       **kwargs)
 
 
 def float_to_decimal(f):
     "Convert a floating point number to a Decimal with no loss of information"
     n, d = f.as_integer_ratio()
-    numerator, denominator = Decimal(n), Decimal(d)
-    ctx = Context(prec=60)
+    numerator, denominator = decimal.Decimal(n), decimal.Decimal(d)
+    ctx = decimal.Context(prec=60)
     result = ctx.divide(numerator, denominator)
-    while ctx.flags[Inexact]:
-        ctx.flags[Inexact] = False
+    while ctx.flags[decimal.Inexact]:
+        ctx.flags[decimal.Inexact] = False
         ctx.prec *= 2
         result = ctx.divide(numerator, denominator)
     return result

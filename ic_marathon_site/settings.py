@@ -34,26 +34,33 @@ else:
 ALLOWED_HOSTS = ['127.0.0.1', '.herokuapp.com']
 
 
-# Application definition
-
-INSTALLED_APPS = [
-    'django_tables2',
-    'bootstrap4',
-    'bootstrap_datepicker_plus',
-    'badgify',
-    'django_select2',
-    'sslserver',
-    'django.contrib.admin',
+DJANGO_APPS = [ 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'social_django',
-    'ic_marathon_app',
-    'storages',
+    'django.contrib.staticfiles',]
 
+THIRD_PARTY_APPS = [ 'bootstrap4',
+    'bootstrap_datepicker_plus',
+    'badgify',
+    'django_tables2',
+    'sslserver',
+   
+    "allauth_ui",
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.google','storages',
+    "widget_tweaks",]
+LOCAL_APPS = [
+   
+    'ic_marathon_app',
+    
 ]
+INSTALLED_APPS = DJANGO_APPS+THIRD_PARTY_APPS+LOCAL_APPS
+
 BOOTSTRAP4 = {
     'include_jquery': True,
 }
@@ -66,7 +73,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware'
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = 'ic_marathon_site.urls'
@@ -82,9 +89,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
-            ],
+                            ],
         },
     },
 ]
@@ -109,10 +114,7 @@ DATABASES = {
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
 
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_URL = 'logout'
-LOGOUT_REDIRECT_URL = 'login'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -133,15 +135,18 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'social_core.backends.instagram.InstagramOAuth2',
-    'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.facebook.FacebookOAuth2',
+     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-### Social Network LOGIN ###
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+SITE_ID = 1
 
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+LOGIN_REDIRECT_URL = 'home'
 CACHES = {
     'default': {
         'BACKEND': 'django_bmemcached.memcached.BMemcached',
@@ -209,45 +214,9 @@ MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 PRIVATE_FILE_STORAGE = 'ic_marathon_site.storage_backends.PrivateMediaStorage'
 
 
-SOCIAL_AUTH_FACEBOOK_KEY = os.environ.get('FB_APP_KEY')        # App ID
-SOCIAL_AUTH_FACEBOOK_SECRET = os.environ.get('FB_APP_SECRET')  # App Secret
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']  # add this
-SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {       # add this
-    'fields': 'id, name, email, picture.type(large), link'
-}
-SOCIAL_AUTH_FACEBOOK_EXTRA_DATA = [                 # add this
-    ('name', 'name'),
-    ('email', 'email'),
-    ('picture', 'picture'),
-    ('link', 'profile_url'),
-]
 
-SOCIAL_AUTH_INSTAGRAM_KEY = os.environ.get('IG_APP_KEY')  # Client ID
-SOCIAL_AUTH_INSTAGRAM_SECRET = os.environ.get('IG_APP_SECRET')  # Client SECRET
-SOCIAL_AUTH_INSTAGRAM_EXTRA_DATA = [('user', 'user'),
-                                    ]
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('G_APP_KEY')  # Client ID
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get(
-    'G_APP_SECRET')  # Client SECRET
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile'
-]
-SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.auth_allowed',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.get_username',
-    'social_core.pipeline.user.create_user',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
-    'ic_marathon_app.pipeline.get_avatar',
-
-)
-
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = BASE_DIR  +'/emails'
 
 LOGGING = {
     'version': 1,

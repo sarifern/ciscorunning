@@ -28,9 +28,8 @@ urlpatterns = [
     path("add_workout_fs/", views.add_workout_fs, name="add_workout_fs"),
     path("delete_workout/<uuid>/", views.delete_workout, name="delete_workout"),
     path("leaderboard/", views.leaderboard, name="leaderboard"),
-    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
-    path(r'^complete/(?P<backend>[^/]+)/$', views.complete, name='complete'),
-    path('social-auth/', include('social_django.urls', namespace="social")),
+
+    path('accounts/', include('allauth.urls')),
     path("", views.home, name="home"),
     path('select2/', include('django_select2.urls')),
     path('badges/',include('badgify.urls')),

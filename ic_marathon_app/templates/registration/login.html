@@ -1,8 +1,7 @@
 <!-- templates/login.html -->
 
 {% extends 'registration/base.html' %} {% block title %} Sign in {% endblock %}
-{% block content %} {% load static %}
-
+{% block content %} {% load static %} {% load socialaccount %}
 <div class="flex flex-center">
   <img
     class="content-fluid"
@@ -19,13 +18,18 @@
     <hr />
     <div>
       <div class="no-padding">
-        <a href="{% url 'social:begin' 'google-oauth2' %}"
+        <a href="{% provider_login_url 'google' %}"
           ><button class="button-loggin">Login with Google</button></a
         >
       </div>
-      <div>
-        <a href="{% url 'social:begin' 'facebook' %}"
+      <div class="no-padding">
+        <a href="{% provider_login_url 'facebook' %}"
           ><button class="button-loggin">Login with Facebook</button></a
+        >
+      </div>
+      <div class="no-padding">
+        <a href="{% url 'account_login' %}"
+          ><button class="button-loggin">Login with Email</button></a
         >
       </div>
     </div>

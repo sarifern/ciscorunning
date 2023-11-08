@@ -44,9 +44,11 @@
                 <div class="base-margin">
                     <div class="flex flex-center flex-middle"><img class="w3-round w3-image" src={{user.profile.avatar}} style="width:50%"></div>
                     <div class="flex flex-center flex-middle half-padding-top">
-                        
+                           {% if user.first_name and user.last_name %}
                         <div class="text-size-16 text-center">{{user.first_name}} {{user.last_name}} <br>
-                        
+                        {% else %}
+                        <div class="text-size-16 text-center">{{user.username}}<br>
+                        {% endif %}
                         {% if earned_awards %}
                         <span tabindex="0" data-balloon-break data-balloon-pos="up" data-balloon="Awards Received"><img src="{% static 'img/reward.svg' %}" style="width: 20px"></span> {% endif %} 
                         {% if user.profile.user_goal %}
@@ -81,7 +83,7 @@
                             </a>
                         </li>
                         <li class="sidebar__item text-size-12">
-                            <a href="{% url 'logout'%}">
+                            <a href="{% url 'account_logout' %}">
                                 <span class="icon-leave-meeting"></span>
                                 <span>Logout</span>
                             </a>
@@ -119,7 +121,7 @@
                             <span>Leaderboard</span>
                         </a>
 
-                        <a href="{% url 'logout'%}">
+                        <a href="{% url 'account_logout' %}">
                             <span class="icon-leave-meeting"></span>
                             <span>Logout</span>
                         </a>
