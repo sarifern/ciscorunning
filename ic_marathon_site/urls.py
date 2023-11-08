@@ -20,7 +20,8 @@ from ic_marathon_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("login/", views.login, name="login"),
+    path("", views.home, name="home"),
+    
     path("profile_wizard/", views.profile_wizard, name="profile_wizard"),
     path("my_workouts/", views.my_workouts, name="my_workouts"),
     path("my_profile/", views.my_profile, name="my_profile"),
@@ -30,7 +31,7 @@ urlpatterns = [
     path("leaderboard/", views.leaderboard, name="leaderboard"),
 
     path('accounts/', include('allauth.urls')),
-    path("", views.home, name="home"),
+    
     path('select2/', include('django_select2.urls')),
     path('badges/',include('badgify.urls')),
 ]

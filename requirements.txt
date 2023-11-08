@@ -1,6 +1,7 @@
 annotated-types==0.5.0
 asgiref==3.7.2
 astroid==2.15.8
+autoflake==2.2.1
 autopep8==2.0.4
 bandit==1.7.5
 beautifulsoup4==4.12.2
@@ -14,14 +15,15 @@ cryptography==41.0.5
 defusedxml==0.7.1
 dill==0.3.7
 dj-database-url==2.1.0
-Django==3.2.23
+Django==4.2.7
 django-allauth==0.58.2
-django-allauth-ui==0.1.0
+django-allauth-ui==0.1.5
 django-appconf==1.0.5
 django-badgify==0.6.0
 django-bmemcached==0.3.0
 django-bootstrap-datepicker-plus==5.0.4
 django-bootstrap4==23.1
+django-crispy-forms==2.1
 django-select2==7.11.1
 django-sslserver==0.22
 django-storages==1.14.2
@@ -49,7 +51,8 @@ psycopg2==2.9.9
 pycodestyle==2.10.0
 pycparser==2.21
 pydantic==2.4.2
-pydantic_core==2.13.0
+pydantic_core==2.10.1
+pyflakes==3.1.0
 Pygments==2.16.1
 PyJWT==2.8.0
 pylint==2.17.7
