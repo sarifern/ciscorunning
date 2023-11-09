@@ -1,7 +1,7 @@
 <!-- my_profile.html -->
 
-{% extends 'ic_marathon_app/base.html' %} {% block title %} My Profile {%
-endblock %} {% block content %} {% load static %}
+{% extends 'ic_marathon_app/base.html' %} {% block title %} My Profile 
+{% endblock %} {% block content %} {% load static %}
 
 <div class="row">
   <div class="col-xl-8">
@@ -13,7 +13,7 @@ endblock %} {% block content %} {% load static %}
           <img class="image-size-96" src="{{user.profile.avatar}}" /><br />
         </div>
         <div class="flex flex-center">
-          {% if user.first_name!="" and user.last_name!="" %}
+          {% if user.first_name and user.last_name %}
           <span class="text-size-18 text-center-xs-down"
             >{{user.first_name}} {{user.last_name}} | {{user.profile.cec}}</span
           >
