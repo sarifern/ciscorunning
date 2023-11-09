@@ -54,16 +54,27 @@
             <div class="form-group">
 
                 <label for="input-layout-stacked-1">Select a Category:</label><br>
-                <div style="overflow-x:scroll">
-                    <div class="btn-group">
+                
+                    <div class="btn-group hidden-md-down">
                         {% for choice in form.fields.category.choices %}
                         <button type="submit" name="category" value={{choice.0}}
-                            {% if form.initial.category == choice.0 %} class="btn btn--ghost selected" {%else %}
+                            {% if form.initial.category == choice.0 %} class="btn btn--ghost selected " {%else %}
                             class="btn btn--ghost" {% endif %}
                             onclick="select_hidden_category('{{choice.0}}')">{{choice.1}}</button>
+                        
                         {% endfor %}
                     </div>
-                </div>
+                    <div class="btn-group hidden-lg-up" style="width: 95%;">
+                        {% for choice in form.fields.category.choices %}
+                        <button type="submit" name="category" value={{choice.0}}  style="font-size: x-small;
+padding:2% 0%;"
+                            {% if form.initial.category == choice.0 %}  class="btn btn--ghost selected " {%else %}
+                            class="btn btn--ghost" {% endif %}
+                            onclick="select_hidden_category('{{choice.0}}')">{{ choice.1 }} </button>
+                        
+                        {% endfor %}
+                    </div>
+                
             </div>
 
             <br>
