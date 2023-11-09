@@ -19,7 +19,20 @@ Sign in
 
   {% include "account/_non_field_errors.html" %}
 
-  {% for field in form.visible_fields %}
+  
+{% get_providers as socialaccount_providers %}
+{% if socialaccount_providers %}
+
+<p class="text-xs text-center text-gray-500">Sign in with a third party</p>
+
+{% include "socialaccount/snippets/provider_list.html" with process="login" %}
+{% endif %}
+<div class="flex items-center self-stretch justify-between pt-3 mt-3">
+  <hr class="w-full">
+  <span class="p-2 mb-1 text-gray-400">OR</span>
+  <hr class="w-full">
+</div>
+{% for field in form.visible_fields %}
     {% if field.name != "remember" %}
     <div class="mb-4">
     {{ field|add_label_class:"font-semibold text-xs" }}
@@ -36,8 +49,6 @@ Sign in
     </div>
     {% endif %}
   {% endfor %}
-
-
   {% include "account/_button.html" with text="Login" %}
 
   <div class="flex justify-center mt-6 text-xs">
@@ -50,18 +61,7 @@ Sign in
   <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
   {% endif %}
 </form>
-{% get_providers as socialaccount_providers %}
-{% if socialaccount_providers %}
-<div class="flex items-center self-stretch justify-between pt-3 mt-3">
-  <hr class="w-full">
-  <span class="p-2 mb-1 text-gray-400">OR</span>
-  <hr class="w-full">
-</div>
 
-<p class="text-xs text-center text-gray-500">Sign in with a third party</p>
-
-{% include "socialaccount/snippets/provider_list.html" with process="login" %}
-{% endif %}
 
 {% include "socialaccount/snippets/login_extra.html" %}
 {% endblock %}
