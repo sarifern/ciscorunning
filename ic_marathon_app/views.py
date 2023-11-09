@@ -379,6 +379,7 @@ def profile_wizard(request):
         if form.is_valid():
             form.save()
             wtFlag = False
+            wtParticipantFlag = False
             try:
                 WTAPI.memberships.create(
                     roomId=os.environ.get("WT_ROOMID"),
@@ -394,12 +395,16 @@ def profile_wizard(request):
                     + ") to the challenge! \nGive your best!",
                     markdown=None,
                 )
-            except ApiError:
-                wtFlag = True
+            except ApiError as api_error:
+                if "User is already a participant" in api_error.error_message:
+                    wtParticipantFlag = True
+                else:
+                    wtFlag = True
             return render(
                 request,
                 "ic_marathon_app/profile_wizard.html",
-                {"form": form, "activation": True, "wtFlag": wtFlag},
+                {"form": form, "activation": True, "wtFlag": wtFlag,
+                 "wtParticipantFlag": wtParticipantFlag},
             )
     else:
         form = ProfileForm(instance=profile)

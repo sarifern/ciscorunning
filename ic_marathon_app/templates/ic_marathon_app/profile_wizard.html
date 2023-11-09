@@ -100,8 +100,11 @@ padding:2% 0%;"
                 <div class="modal__body">
                     <p>Let's workout!</p>
                     {% if wtFlag %}
-                    <p>Something happened with the integration with WebexTeams. Please reach out to the admins. :(</p>
+                    <p>Something happened with the integration with Webex Teams. Please reach out to the admins. :(</p>
+                    {% elif wtParticipantFlag%}
+                    <p> You're good to go, you were already added to the Webex Teams space.</p>
                     {% endif %}
+
                 </div>
                 <div class="modal__footer">
                     <button class="btn btn--success" onclick="closeModal()">Ok</button>
