@@ -50,15 +50,15 @@
                         <div class="text-size-16 text-center">{{user.username}}<br>
                         {% endif %}
                         {% if earned_awards %}
-                        <span tabindex="0" data-balloon-break data-balloon-pos="up" data-balloon="Awards Received"><img src="{% static 'img/reward.svg' %}" style="width: 20px"></span> {% endif %} 
+                        <span tabindex="0" data-balloon-break data-balloon-pos="up" data-balloon="Awards Received"><img src="{% static 'img/reward.svg' %}" style="width: 50px"></span> {% endif %} 
                         {% if user.profile.user_goal %}
-                        <span tabindex="0" data-balloon="42K Reached!" data-balloon-break data-balloon-pos="up"><img src="{% static 'img/trophy.svg' %}" style="width: 20px"></span> {% endif %}
+                        <span tabindex="0" data-balloon="42K Reached!" data-balloon-break data-balloon-pos="up"><img src="{% static 'img/trophy.svg' %}" style="width: 50px"></span> {% endif %}
                         {% if user.profile.category == "beginnerrunner" %}
-                        <span tabindex="0" data-balloon="Beginner&#10;Runner" data-balloon-break data-balloon-pos="up"><img src="{% static 'img/br.svg' %}" style="width: 20px"> </div></span> {% elif user.profile.category == "runner" %}
-                        <span tabindex="0" data-balloon="Runner" data-balloon-pos="up"><img src="{% static 'img/runner.svg' %}" style="width: 20px"> </div></span> {% elif user.profile.category == "biker" %}
-                        <span tabindex="0" data-balloon="Biker" data-balloon-pos="up"><img src="{% static 'img/biker.svg' %}" style="width: 20px"> </div></span> {% elif user.profile.category == "duathloner" %}
-                        <span tabindex="0" data-balloon="Biker" data-balloon-pos="up"><img src="{% static 'img/biker.svg' %}" style="width: 20px"> <img src="{% static 'img/runner.svg' %}" style="width: 20px"> </div></span> {% elif user.profile.category == "freestyler" %}
-                        <span tabindex="0" data-balloon="Biker" data-balloon-pos="up"><img src="{% static 'img/fs.svg' %}" style="width: 20px"> </div></span> {% endif %}</div>
+                        <span tabindex="0" data-balloon="Beginner&#10;Runner" data-balloon-break data-balloon-pos="up"><img src="{% static 'img/br.svg' %}" style="width: 50px"> </div></span> {% elif user.profile.category == "runner" %}
+                        <span tabindex="0" data-balloon="Runner" data-balloon-pos="up"><img src="{% static 'img/br.svg' %}" style="width: 50px"><img src="{% static 'img/br.svg' %}" style="width: 50px"> </div></span> {% elif user.profile.category == "biker" %}
+                        <span tabindex="0" data-balloon="Biker" data-balloon-pos="up"><img src="{% static 'img/biker.svg' %}" style="width: 50px"> </div></span> {% elif user.profile.category == "duathloner" %}
+                        <span tabindex="0" data-balloon="Biker" data-balloon-pos="up"><img src="{% static 'img/biker.svg' %}" style="width: 50px"> <img src="{% static 'img/br.svg' %}" style="width: 50px"> </div></span> {% elif user.profile.category == "freestyler" %}
+                        <span tabindex="0" data-balloon="Biker" data-balloon-pos="up"><img src="{% static 'img/fs.svg' %}" style="width: 50px"> </div></span> {% endif %}</div>
 
                     </div>
 
