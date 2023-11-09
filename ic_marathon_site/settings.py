@@ -31,7 +31,7 @@ if os.environ.get("DEBUG_PREF") != "False":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "ciscorunning.xyz", ".herokuapp.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "ciscorunning.xyz","www.ciscorunning.xyz", ".herokuapp.com"]
 
 
 DJANGO_APPS = [
