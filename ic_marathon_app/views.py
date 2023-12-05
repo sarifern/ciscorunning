@@ -51,7 +51,7 @@ def home(request):
             account_picture = SocialAccount.objects.get(
                 user=request.user
             ).extra_data.get(
-                "picture",
+                "profile",
                 "https://scontent.fmex5-1.fna.fbcdn.net/v/t1.30497-1/84628273_176159830277856_972693363922829312_n.jpg?stp=c15.0.50.50a_cp0_dst-jpg_p50x50&_nc_cat=1&ccb=1-7&_nc_sid=810bd0&_nc_ohc=KBzs914Ok5UAX_kECCO&_nc_ht=scontent.fmex5-1.fna&edm=AHgPADgEAAAA&oh=00_AfB8FoQLg44f1goI2dEyRXsK4kZiVFbTph6AAWP6vDvXXA&oe=65734F99",
             )
         except ObjectDoesNotExist:
