@@ -222,6 +222,11 @@ PRIVATE_FILE_STORAGE = "ic_marathon_site.storage_backends.PrivateMediaStorage"
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
+EMAIL_HOST = os.environ.get('MAILGUN_SMTP_SERVER', '')
+EMAIL_PORT = os.environ.get('MAILGUN_SMTP_PORT', '')
+EMAIL_HOST_USER = os.environ.get('MAILGUN_SMTP_LOGIN', '')
+EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_SMTP_PASSWORD', '')
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
