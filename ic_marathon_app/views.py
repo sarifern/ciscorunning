@@ -322,6 +322,8 @@ def leaderboard(request):
         earned_awards = Award.objects.filter(user=request.user)
     except ObjectDoesNotExist:
         earned_awards = {}
+
+    
     leaders_br = Profile.objects.filter(category="beginnerrunner").order_by("-distance")
     leaders_r = Profile.objects.filter(category="runner").order_by("-distance")
     leaders_b = Profile.objects.filter(category="biker").order_by("-distance")
@@ -343,20 +345,27 @@ def leaderboard(request):
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_d)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_f)
 
+    list_tables = [(table_leaders_br,len(leaders_br),"Beginner Runners"),
+                   (table_leaders_r,len(leaders_r),"Runners"),
+                   (table_leaders_b,len(leaders_b),"Bikers"),
+                   (table_leaders_d,len(leaders_d),"Duathloners"),
+                   (table_leaders_f,len(leaders_f),"Freestylers")]
+
+    match request.user.profile.category:
+        case "runner":
+            list_tables.insert(0, list_tables.pop(1))
+        case "biker":
+            list_tables.insert(0, list_tables.pop(2))
+        case "duathloner":
+            list_tables.insert(0, list_tables.pop(3))
+        case "freestyler":
+            list_tables.insert(0, list_tables.pop(4))
+
     return render(
         request,
         "ic_marathon_app/leaderboard.html",
         {
-            "leaders_br": table_leaders_br,
-            "leaders_br_c": len(leaders_br),
-            "leaders_r": table_leaders_r,
-            "leaders_r_c": len(leaders_r),
-            "leaders_b": table_leaders_b,
-            "leaders_b_c": len(leaders_b),
-            "leaders_d": table_leaders_d,
-            "leaders_d_c": len(leaders_d),
-            "leaders_f": table_leaders_f,
-            "leaders_f_c": len(leaders_f),
+            "tables": list_tables,
             "earned_awards": earned_awards,
             "total_kms": total_kms,
         },

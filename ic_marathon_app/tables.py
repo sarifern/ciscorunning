@@ -3,13 +3,18 @@ from django_tables2 import TemplateColumn
 from django.utils.html import format_html
 from .models import Workout, Profile
 from badgify.models import Award
-from django.contrib.auth.models import User
 from pytz import timezone
+import itertools
 
 
 class ProfileTable(tables.Table):
     award = tables.Column(empty_values=())
+    position = tables.Column(empty_values=(), orderable=False)
 
+    def render_position(self):
+        self.row_counter = getattr(self, 'row_counter', itertools.count())
+        return int(next(self.row_counter))+1
+    
     def render_award(self, value, record):
         awards_html = ""
         earned_awards = Award.objects.filter(
@@ -26,7 +31,7 @@ class ProfileTable(tables.Table):
         model = Profile
         template = "django_tables2/bootstrap-responsive.html"
         attrs = {"class": "table table--striped table--wrapped"}
-        fields = ("avatar", "cec", "distance", "award")
+        fields = ("position", "avatar", "cec", "distance", "award")
 
 
 class WorkoutTable(tables.Table):

@@ -9,61 +9,17 @@
     </div>
 </div>
 
+{% for table,table_c,table_title in tables%}
 <div class="panel panel--loose panel--raised base-margin-bottom">
     <div class="section no-padding">
-        {% if leaders_br %}
-        <div class="text-size-12 half-padding-bottom text-bold">Beginner Runners ({{leaders_br_c}}) </div>
-        <div style="overflow-x:auto;">{% render_table leaders_br %}</div> {% endif %}
+        {% if table %}
+        <div class="text-size-12 half-padding-bottom text-bold">{{table_title}} ({{table_c}}) </div>
+        <div style="overflow-x:auto;">{% render_table table %}</div> {% endif %}
 
         <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
 
     </div>
 </div>
-
-<div class="panel panel--loose panel--raised base-margin-bottom">
-    <div class="section no-padding">
-        {% if leaders_r %}
-        <div class="text-size-12 half-padding-bottom text-bold">Runners ({{leaders_r_c}})</div>
-        <div style="overflow-x:auto;">{% render_table leaders_r %}</div>{% endif %}
-
-
-        <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-
-    </div>
-</div>
-
-
-<div class="panel panel--loose panel--raised base-margin-bottom">
-    <div class="section no-padding">
-        {% if leaders_b %}
-        <div class="text-size-12 half-padding-bottom text-bold	">Bikers ({{leaders_b_c}})</div>
-        <div style="overflow-x:auto;">{% render_table leaders_b %}</div> {% endif %}
-
-        <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-
-    </div>
-</div>
-
-<div class="panel panel--loose panel--raised base-margin-bottom">
-    <div class="section no-padding">
-        {% if leaders_d %}
-        <div class="text-size-12 half-padding-bottom text-bold	">Duathloners ({{leaders_d_c}})</div>
-        <div style="overflow-x:auto;">{% render_table leaders_d %}</div> {% endif %}
-
-        <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-
-    </div>
-</div>
-
-<div class="panel panel--loose panel--raised base-margin-bottom">
-    <div class="section no-padding">
-        {% if leaders_f %}
-        <div class="text-size-12 half-padding-bottom text-bold	">Freestylers ({{leaders_f_c}})</div>
-        <div style="overflow-x:auto;">{% render_table leaders_f %}</div> {% endif %}
-
-        <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-
-    </div>
-</div>
+{% endfor %}
 
 {% endblock %}
