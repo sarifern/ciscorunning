@@ -9,11 +9,7 @@ import itertools
 
 class ProfileTable(tables.Table):
     award = tables.Column(empty_values=())
-    position = tables.Column(empty_values=(), orderable=False)
-
-    def render_position(self):
-        self.row_counter = getattr(self, 'row_counter', itertools.count())
-        return int(next(self.row_counter))+1
+    
     
     def render_award(self, value, record):
         awards_html = ""
@@ -31,7 +27,7 @@ class ProfileTable(tables.Table):
         model = Profile
         template = "django_tables2/bootstrap-responsive.html"
         attrs = {"class": "table table--striped table--wrapped"}
-        fields = ("position", "avatar", "cec", "distance", "award")
+        fields = ( "avatar", "cec", "distance", "award")
 
 
 class WorkoutTable(tables.Table):
