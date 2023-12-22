@@ -23,11 +23,11 @@ Sign in
 {% get_providers as socialaccount_providers %}
 {% if socialaccount_providers %}
 
-<p class="text-xs text-center text-gray-500">Sign in with a third party</p>
+<p class="text-s text-center ">Sign in with a third party</p>
 
 {% include "socialaccount/snippets/provider_list.html" with process="login" %}
 
-<p class="text-xs text-center text-gray-500">We use Strava for login and authentication.</p>
+<p class="text-xs text-center text-gray-500">We use Strava for login and authentication. We don't pull workouts from Strava (yet!).</p>
 <p class="text-xs text-center text-gray-500">If you don't have a Strava account, you can create one through this button as well, selecting any social network from Facebook, Google or Apple.</p>
 
 {% endif %}
@@ -56,9 +56,14 @@ Sign in
   {% include "account/_button.html" with text="Login" %}
 
   <div class="flex justify-center mt-6 text-xs">
-    <a class="text-blue-400 hover:text-blue-500" href="{% url 'account_reset_password' %}">Forgot Password</a>
-    <span class="mx-2 text-gray-300">/</span>
-    <a class="text-blue-400 hover:text-blue-500" href="{% url 'account_signup' %}">Sign Up</a>
+      <a class="text-blue-400 hover:text-blue-500" href="{% url 'account_signup' %}">Sign Up</a>
+
+
+  </div>
+<div class="flex justify-center mt-6 text-xs">
+        <p class="text-xs text-center">Forgot Password? Please request a Password Recovery to the Admins.</p>
+
+
   </div>
 
   {% if redirect_field_value %}

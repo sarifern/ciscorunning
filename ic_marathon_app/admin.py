@@ -5,8 +5,8 @@ from django.utils.html import format_html
 
 
 class WorkoutAdmin(admin.ModelAdmin):
-    list_display = ('uploaded_at','belongs_to', 'distance', 'image_tag')
-    list_filter = ['belongs_to','uploaded_at']
+    list_display = ('uploaded_at', 'belongs_to', 'distance', 'image_tag')
+    list_filter = ['belongs_to', 'uploaded_at']
 
     def image_tag(self, obj):
         return format_html(
