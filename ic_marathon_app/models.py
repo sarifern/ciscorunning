@@ -22,10 +22,11 @@ RUNNER = "runner"
 BIKER = "biker"
 DUATHLONER = "duathloner"
 FREESTYLER = "freestyler"
+ADVANCEDFREESTYLER = "advfreestyler"
 
 CATEGORY_CHOICES = ((BEGINNERRUNNER,
                      'Beginner Runner'), (RUNNER, 'Runner'), (BIKER, 'Biker'),
-                    (DUATHLONER, 'Duathloner'), (FREESTYLER, 'Freestyler'))
+                    (DUATHLONER, 'Duathloner'), (FREESTYLER, 'Freestyler'), (ADVANCEDFREESTYLER, 'Advanced Freestyler'))
 
 # Intensity choices
 
@@ -35,6 +36,7 @@ HIGH = "high"
 
 INTENSITY_CHOICES = ((LIGHT,"Light"),
 (MEDIUM,"Medium"),(HIGH,"High"))
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -92,7 +94,10 @@ class Workout(models.Model):
                                 max_length=10,
                                 choices=INTENSITY_CHOICES,
                                 blank=False,
-                                default=MEDIUM)
+                                default=HIGH)
+    audited = models.BooleanField(verbose_name="Audited?",
+                                  help_text="Already audited?",
+                                  default=False)
 
 
 class WorkoutForm(ModelForm):

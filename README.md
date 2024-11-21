@@ -151,7 +151,7 @@ virtualenv .venv --python=3.11
 ``` 
 To activate the environment, use the following command:
 ``` 
-PS C:\Users\sarifern\CX\ciscorunning> .\venv\Scripts\activate.ps1 
+PS C:\Users\sarifern\CX\ciscorunning> .\venv\Scripts\activate
 (venv) PS C:\Users\sarifern\CX\ciscorunning> 
 ``` 
 Install requirements

@@ -26,7 +26,8 @@
         <div class="flex flex-center">
           <span class="text-size-14 text-gray-700 text-capitalize"
             >Category - {% if user.profile.category == "beginnerrunner"%}
-            Beginner Runner{% else %} {{user.profile.category }} {% endif %} |
+            Beginner Runner{% elif user.profile.category == "advfreestyler"%}Advanced Freestyler{% else %}
+            {{user.profile.category }} {% endif %} |
             My Goal - {{user.profile.user_goal_km}}km
           </span>
         </div>

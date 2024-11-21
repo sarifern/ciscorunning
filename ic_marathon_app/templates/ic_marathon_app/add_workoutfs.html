@@ -14,6 +14,18 @@
 
         window.location.href = "/";
     }
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var select = document.getElementById("id_intensity");
+        var category = "{{user.profile.category}}";
+        if (category == "freestyler"){
+            select.remove(2)
+        }else{
+            select.remove(1)
+            select.remove(0)
+        }
+    });
+        
 </script>
 
 <div class="panel panel--loose panel--raised base-margin-bottom">
@@ -49,7 +61,7 @@
             </div>
             <div class="form-group text-normal">
                 <div class="qtr-padding-bottom ">
-                    <label>Intensity</label> {{ form.intensity }} 
+                    <label>Intensity</label> {{ form.intensity }}
                 </div>
             </div>
 

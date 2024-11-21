@@ -17,10 +17,10 @@ import pytz as tz
 
 WTAPI = WebexTeamsAPI(access_token=os.environ.get("WT_TOKEN"))
 
-DATE_START = datetime(2023, 12, 12, 1, 0, 0).replace(
+DATE_START = datetime(2024, 12, 12, 1, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
-DATE_END = datetime(2024, 1, 7, 0, 0, 0).replace(
+DATE_END = datetime(2025, 1, 7, 0, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
 
@@ -329,6 +329,7 @@ def leaderboard(request):
     leaders_b = Profile.objects.filter(category="biker").order_by("-distance")
     leaders_d = Profile.objects.filter(category="duathloner").order_by("-distance")
     leaders_f = Profile.objects.filter(category="freestyler").order_by("-distance")
+    leaders_af = Profile.objects.filter(category="advfreestyler").order_by("-distance")
 
     total_workouts = Workout.objects.all()
     total_kms = 0
@@ -339,17 +340,20 @@ def leaderboard(request):
     table_leaders_b = ProfileTable(leaders_b, prefix="leaders-b-")
     table_leaders_d = ProfileTable(leaders_d, prefix="leaders-d-")
     table_leaders_f = ProfileTable(leaders_f, prefix="leaders-f-")
+    table_leaders_af = ProfileTable(leaders_af, prefix="leaders-af-")
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_br)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_r)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_b)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_d)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_f)
+    RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_af)
 
     list_tables = [(table_leaders_br,len(leaders_br),"Beginner Runners"),
                    (table_leaders_r,len(leaders_r),"Runners"),
                    (table_leaders_b,len(leaders_b),"Bikers"),
                    (table_leaders_d,len(leaders_d),"Duathloners"),
-                   (table_leaders_f,len(leaders_f),"Freestylers")]
+                   (table_leaders_f,len(leaders_f),"Freestylers"),
+                   (table_leaders_af,len(leaders_af),"Advanced Freestylers")]
 
     match request.user.profile.category:
         case "runner":
@@ -360,6 +364,8 @@ def leaderboard(request):
             list_tables.insert(0, list_tables.pop(3))
         case "freestyler":
             list_tables.insert(0, list_tables.pop(4))
+        case "advfreestyler":
+            list_tables.insert(0, list_tables.pop(5))
 
     return render(
         request,
