@@ -327,7 +327,6 @@ def leaderboard(request):
     leaders_br = Profile.objects.filter(category="beginnerrunner").order_by("-distance")
     leaders_r = Profile.objects.filter(category="runner").order_by("-distance")
     leaders_b = Profile.objects.filter(category="biker").order_by("-distance")
-    leaders_d = Profile.objects.filter(category="duathloner").order_by("-distance")
     leaders_f = Profile.objects.filter(category="freestyler").order_by("-distance")
     leaders_af = Profile.objects.filter(category="advfreestyler").order_by("-distance")
 
@@ -338,20 +337,17 @@ def leaderboard(request):
     table_leaders_br = ProfileTable(leaders_br, prefix="leaders-br-")
     table_leaders_r = ProfileTable(leaders_r, prefix="leaders-r-")
     table_leaders_b = ProfileTable(leaders_b, prefix="leaders-b-")
-    table_leaders_d = ProfileTable(leaders_d, prefix="leaders-d-")
     table_leaders_f = ProfileTable(leaders_f, prefix="leaders-f-")
     table_leaders_af = ProfileTable(leaders_af, prefix="leaders-af-")
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_br)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_r)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_b)
-    RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_d)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_f)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_af)
 
     list_tables = [(table_leaders_br,len(leaders_br),"Beginner Runners"),
                    (table_leaders_r,len(leaders_r),"Runners"),
                    (table_leaders_b,len(leaders_b),"Bikers"),
-                   (table_leaders_d,len(leaders_d),"Duathloners"),
                    (table_leaders_f,len(leaders_f),"Freestylers"),
                    (table_leaders_af,len(leaders_af),"Advanced Freestylers")]
 
@@ -360,12 +356,10 @@ def leaderboard(request):
             list_tables.insert(0, list_tables.pop(1))
         case "biker":
             list_tables.insert(0, list_tables.pop(2))
-        case "duathloner":
-            list_tables.insert(0, list_tables.pop(3))
         case "freestyler":
-            list_tables.insert(0, list_tables.pop(4))
+            list_tables.insert(0, list_tables.pop(3))
         case "advfreestyler":
-            list_tables.insert(0, list_tables.pop(5))
+            list_tables.insert(0, list_tables.pop(4))
 
     return render(
         request,

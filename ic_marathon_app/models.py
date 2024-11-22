@@ -20,13 +20,12 @@ import q
 BEGINNERRUNNER = "beginnerrunner"
 RUNNER = "runner"
 BIKER = "biker"
-DUATHLONER = "duathloner"
 FREESTYLER = "freestyler"
 ADVANCEDFREESTYLER = "advfreestyler"
 
 CATEGORY_CHOICES = ((BEGINNERRUNNER,
                      'Beginner Runner'), (RUNNER, 'Runner'), (BIKER, 'Biker'),
-                    (DUATHLONER, 'Duathloner'), (FREESTYLER, 'Freestyler'), (ADVANCEDFREESTYLER, 'Advanced Freestyler'))
+                    (FREESTYLER, 'Freestyler'), (ADVANCEDFREESTYLER, 'Advanced Freestyler'))
 
 # Intensity choices
 
