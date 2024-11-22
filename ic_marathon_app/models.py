@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from django_select2.forms import Select2Widget
 from bootstrap_datepicker_plus.widgets import TimePickerInput, DateTimePickerInput
 import uuid
-from .validators import validate_file_size, validate_workout_time, validate_distance, validate_date, validate_min_goal
+from .validators import validate_file_size, validate_workout_time, validate_distance, validate_date, validate_min_goal, validate_cec
 import q
 
 # Create your models here.
@@ -46,7 +46,7 @@ class Profile(models.Model):
                                    decimal_places=2,
                                    validators=[validate_min_goal])
     avatar = models.CharField(max_length=400, blank=False)
-    cec = models.CharField(max_length=30, blank=True)
+    cec = models.CharField(max_length=30, blank=True, validators=[validate_cec])
     distance = models.DecimalField(default=0.00,
                                    max_digits=10,
                                    decimal_places=2)

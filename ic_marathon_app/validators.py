@@ -13,6 +13,13 @@ def validate_date(value):
     else:
         return value
 
+def validate_cec(value):
+    if "@" in value:
+        raise ValidationError("Please submit your CEC user without the @cisco.com'")
+    elif re.match("\d+",value):
+        raise ValidationError("Please submit your CEC user <CEC user>@cisco.com, not your employee number")
+    else:
+        return value
 
 def validate_file_size(value):
     filesize = value.size
