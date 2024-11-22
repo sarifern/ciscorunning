@@ -34,7 +34,7 @@ def home(request):
     DATE = datetime.now().replace(tzinfo=tz.timezone("America/Mexico_City"))
     if os.environ.get("DEBUG_PREF") == "True":
         # this is on BETA bypass
-        DATE = datetime(2023, 12, 15, 0, 0, 0).replace(
+        DATE = datetime(2024, 12, 15, 0, 0, 0).replace(
             tzinfo=tz.timezone("America/Mexico_City")
         )
     if DATE >= DATE_START and DATE <= DATE_END:
