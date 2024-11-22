@@ -29,7 +29,19 @@
     <div class="text-uppercase text-size-14">Save your profile</div>
     <hr>
     <div class="section no-padding">
-
+        {{ form.non_field_errors }}
+            {% if form.errors %}
+            <div class="alert alert-error">
+                <button type="button" class="close" data-dismiss="alert"><span class="icon-close"></span></button>
+                
+                {% for field in form %} 
+                    {% if field.errors %}
+                    {{ field.label }}: {{ field.errors|striptags }}
+                    {% endif %}
+                {% endfor %}
+               
+            </div>
+            {% endif %}
 
         {{ form.media.css }}
         <form method="POST" id="categoryForm" class="text-normal">{% csrf_token %}
