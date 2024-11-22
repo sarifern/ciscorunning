@@ -48,9 +48,7 @@ class WorkoutTable(tables.Table):
         else:
             return format_html("{} min.", value.hour*60+value.minute)
 
-    def render_distance(self, record,value):
-        if record.is_gift:
-            return format_html("{} K", value*2)
+    def render_distance(self, value):
         return format_html("{} K", value)
 
     def render_photo_evidence(self, value):

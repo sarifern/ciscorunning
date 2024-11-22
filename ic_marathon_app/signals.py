@@ -4,6 +4,7 @@ from .models import Workout
 from django.core.files.storage import default_storage
 import q
 
+
 @receiver(post_delete, sender=Workout)
 def delete_workout(sender, instance, **kwargs):
     # update personal distance
@@ -18,8 +19,7 @@ def delete_workout(sender, instance, **kwargs):
     try:
         default_storage.delete(instance.photo_evidence.name)
     except Exception:
-        q("Can't delete the file {} in S3".format(
-            instance.photo_evidence.name))
+        q("Can't delete the file {} in S3".format(instance.photo_evidence.name))
 
 
 @receiver(post_save, sender=Workout)

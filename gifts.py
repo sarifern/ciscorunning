@@ -9,11 +9,10 @@ for cec in cecs_who_joined:
     try:
         # get profile
         profile = Profile.objects.get(cec=cec)
-        # pls submit gift distance / 2, for example if the gift is 2km, submit 1km
         workout = Workout.objects.create(
-            belongs_to=profile, distance=1, time='00:00', date_time=str(datetime.datetime.now()), photo_evidence=None, is_gift=True
+            belongs_to=profile, distance=2, time='00:00', date_time=str(datetime.datetime.now()), photo_evidence=None, is_gift=True
         )
-        workout.save()
+        
         print(f"user {cec} has been granted the gift")
         check_badges(profile.user)
     except MultipleObjectsReturned:
