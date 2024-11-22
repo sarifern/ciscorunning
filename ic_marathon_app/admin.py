@@ -9,7 +9,8 @@ class WorkoutAdmin(admin.ModelAdmin):
     list_filter = ['is_audited', 'belongs_to', 'uploaded_at']
 
     def image_tag(self, obj):
-        return format_html(
+        if obj.photo_evidence:
+            return format_html(
             '<img src="{}" width="600px" height="600px"/>'.format(
                 obj.photo_evidence.url))
 
