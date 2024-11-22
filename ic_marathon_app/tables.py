@@ -39,18 +39,22 @@ class WorkoutTable(tables.Table):
     delete = TemplateColumn(
         template_name='tables/workout_delete_column.html')
 
-    def render_date_time(self, value, record):
+    def render_date_time(self, value):
         return format_html("{}", value.astimezone(timezone('America/Mexico_City')).strftime("%Y-%m-%d"))
 
-    def render_time(self, value):
-        return format_html("{} min.", value.hour*60+value.minute)
+    def render_time(self,record, value):
+        if record.is_gift:
+            return format_html("[GIFT] Extra KMS")
+        else:
+            return format_html("{} min.", value.hour*60+value.minute)
 
-    def render_distance(self, value):
+    def render_distance(self, record,value):
         return format_html("{} K", value)
 
     def render_photo_evidence(self, value):
         return format_html('<img src="{}" height="42" width="42"/>', value.url)
 
+        
     class Meta:
         model = Workout
         template = "django_tables2/bootstrap-responsive.html"

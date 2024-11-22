@@ -95,10 +95,10 @@ class Workout(models.Model):
                                 choices=INTENSITY_CHOICES,
                                 blank=False,
                                 default=HIGH)
-    audited = models.BooleanField(verbose_name="Audited?",
+    is_audited = models.BooleanField(verbose_name="Audited?",
                                   help_text="Already audited?",
                                   default=False)
-
+    is_gift = models.BooleanField(verbose_name="Gift?", help_text="Was this a gift (extra kms)?", default=False)
 
 class WorkoutForm(ModelForm):
     class Meta:
