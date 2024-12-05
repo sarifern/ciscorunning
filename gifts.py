@@ -12,7 +12,7 @@ for cec in cecs_who_joined:
         profile = Profile.objects.get(cec=cec)
         workout = Workout.objects.create(
             belongs_to=profile,
-            distance=2,
+            distance=5,
             time="00:00",
             date_time=str(datetime.datetime.now()),
             photo_evidence=None,
@@ -28,7 +28,7 @@ for cec in cecs_who_joined:
     except Profile.DoesNotExist:
         pass
 
-markdown = f"Hey, thanks for attending the special event. \nTwo extra kms have been granted to the following users: "
+markdown = f"Hey, thanks for attending the special event. \nFive extra kms have been granted to the following users: "
 for cec in cecs_who_joined:
     markdown += f"<@personEmail:{cec}@cisco.com>,"
 markdown = markdown[:-1]
