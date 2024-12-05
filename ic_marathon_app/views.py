@@ -191,12 +191,7 @@ def add_workout_fs(request):
                         if badge.slug == "ownK":
                             WTAPI.messages.create(
                                 roomId=os.environ.get("WT_ROOMID"),
-                                text="Congratulations "
-                                + request.user.first_name
-                                + " ("
-                                + request.user.profile.cec
-                                + ") for achieving your badge!\n Keep it up!",
-                                files=[badge.image.url],
+                                markdown=f"Congratulations <@personEmail:{request.user.profile.cec}@cisco.com> for achieving your badge!\n Keep it up!"
                             )
                     pass
                 except ApiError:
@@ -252,12 +247,8 @@ def add_workout(request):
                         if badge.slug == "ownK":
                             WTAPI.messages.create(
                                 roomId=os.environ.get("WT_ROOMID"),
-                                text="Congratulations "
-                                + request.user.first_name
-                                + " ("
-                                + request.user.profile.cec
-                                + ") for achieving your badge!\n Keep it up!",
-                                files=[badge.image.url],
+                                markdown=f"Congratulations <@personEmail:{request.user.profile.cec}@cisco.com> for achieving your badge!\n Keep it up!"
+                                
                             )
                 except ApiError:
                     pass

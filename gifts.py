@@ -28,9 +28,11 @@ for cec in cecs_who_joined:
     except Profile.DoesNotExist:
         pass
 
+markdown = f"Hey, thanks for attending the special event. \nTwo extra kms have been granted to the following users: "
+for cec in cecs_who_joined:
+    markdown += f"<@personEmail:{cec}@cisco.com>,"
+markdown = markdown[:-1]
 WTAPI.messages.create(
     roomId=os.environ.get("WT_ROOMID"),
-    text="Hey, thanks for attending the special event. \nTwo extra kms have been granted to the following users: {}".format(
-        ", ".join(cecs_who_joined)
-    ),
+    markdown=markdown,
 )
