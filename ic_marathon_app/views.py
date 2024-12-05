@@ -397,12 +397,7 @@ def profile_wizard(request):
                 )
                 WTAPI.messages.create(
                     roomId=os.environ.get("WT_ROOMID"),
-                    text="Let's welcome "
-                    + request.user.first_name
-                    + " ("
-                    + profile.cec
-                    + ") to the challenge! \nGive your best!",
-                    markdown=None,
+                    markdown=f"Let's welcome <@personEmail:{profile.cec}@cisco.com> to the challenge! \nGive your best!"
                 )
             except ApiError as api_error:
                 if "User is already a participant" in api_error.error_message:
