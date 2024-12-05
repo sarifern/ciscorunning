@@ -42,11 +42,11 @@ class WorkoutTable(tables.Table):
     def render_date_time(self, value):
         return format_html("{}", value.astimezone(timezone('America/Mexico_City')).strftime("%Y-%m-%d"))
 
-    def render_time(self,record, value):
+    def render_time(self,record ):
         if record.is_gift:
-            return format_html("[GIFT] Extra KMS")
+            return format_html("GIFT KM")
         else:
-            return format_html("{} min.", value.hour*60+value.minute)
+            return format_html("Workout")
 
     def render_distance(self, value):
         return format_html("{} K", value)
@@ -59,4 +59,4 @@ class WorkoutTable(tables.Table):
         model = Workout
         template = "django_tables2/bootstrap-responsive.html"
         attrs = {"class": "table table--striped"}
-        fields = ("date_time", "distance", "time", "delete")
+        fields = ("date_time", "distance","time",  "delete")

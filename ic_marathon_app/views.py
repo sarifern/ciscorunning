@@ -1,7 +1,7 @@
 from allauth.socialaccount.models import SocialAccount
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
-from .models import ProfileForm, Profile, Workout, WorkoutForm, FSWorkoutForm
+from .models import BikerWorkoutForm, ProfileForm, Profile, Workout, WorkoutForm, FSWorkoutForm
 from badgify.models import Award, Badge
 from django.shortcuts import redirect, render, get_object_or_404
 from .tables import WorkoutTable, ProfileTable
@@ -175,9 +175,9 @@ def add_workout_fs(request):
         if form.is_valid():
             # add table
             if form.instance.intensity == "light":
-                factor = 0.7
-            elif form.instance.intensity == "medium":
                 factor = 0.85
+            elif form.instance.intensity == "medium":
+                factor = 1
             elif form.instance.intensity == "high":
                 factor = 1
             form.instance.distance = float_to_decimal(
@@ -224,6 +224,66 @@ def add_workout_fs(request):
             },
         )
 
+@login_required
+def add_workout_biker(request):
+    """View to handle the Add Workout form for biker category
+
+    Arguments:
+        request {Request} -- The Request from the browser
+
+    Returns:
+        rendered template -- Rendered template regarding successful or failed workout add
+    """
+    if request.method == "POST":
+        form = BikerWorkoutForm(request.POST, request.FILES)
+        form.instance.belongs_to = request.user.profile
+        if form.is_valid():
+            # add table
+            if form.instance.intensity == "medium":
+                factor = decimal.Decimal(1)
+            elif form.instance.intensity == "high":
+                factor = decimal.Decimal(1.5)
+            form.instance.distance =form.instance.distance * factor
+            form.save()
+            new_badges = check_badges(request.user)
+            if new_badges:
+                try:
+                    for badge in new_badges:
+                        if badge.slug == "ownK":
+                            WTAPI.messages.create(
+                                roomId=os.environ.get("WT_ROOMID"),
+                                markdown=f"Congratulations <@personEmail:{request.user.profile.cec}@cisco.com> for achieving your badge!\n Keep it up!"
+                            )
+                    pass
+                except ApiError:
+                    pass
+                return render(
+                    request,
+                    "ic_marathon_app/add_workoutbiker.html",
+                    {
+                        "form": form,
+                        "new_badges": new_badges,
+                    },
+                )
+            else:
+                return redirect("home")
+        else:
+            return render(
+                request,
+                "ic_marathon_app/add_workoutbiker.html",
+                {
+                    "form": form,
+                },
+            )
+    else:
+        form = BikerWorkoutForm()
+        return render(
+            request,
+            "ic_marathon_app/add_workoutbiker.html",
+            {
+                "form": form,
+            },
+        )
 
 @login_required
 def add_workout(request):

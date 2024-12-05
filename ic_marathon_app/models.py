@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from django_select2.forms import Select2Widget
 from bootstrap_datepicker_plus.widgets import TimePickerInput, DateTimePickerInput
 import uuid
-from .validators import validate_file_size, validate_workout_time, validate_distance, validate_date, validate_min_goal, validate_cec
+from .validators import validate_file_size, validate_distance, validate_date, validate_min_goal, validate_cec
 import q
 
 # Create your models here.
@@ -85,9 +85,9 @@ class Workout(models.Model):
                                        storage=PrivateMediaStorage())
     date_time = models.DateTimeField(verbose_name="Date",
                                      validators=[validate_date])
-    time = models.TimeField(verbose_name="Duration",
-                            help_text='Workout in minutes',
-                            validators=[validate_workout_time],
+    time = models.TimeField(verbose_name="Type",
+                            help_text='Workout/Gift',
+                          
                             default='00:00')
     intensity = models.CharField(verbose_name="Intensity",
                                 max_length=10,
@@ -102,10 +102,9 @@ class Workout(models.Model):
 class WorkoutForm(ModelForm):
     class Meta:
         model = Workout
-        fields = ['distance', 'date_time', 'time', 'photo_evidence']
+        fields = ['distance', 'date_time',  'photo_evidence']
         widgets = {
             'date_time': DateTimePickerInput(),
-            'time': TimePickerInput(),
         }
 
 
@@ -118,6 +117,13 @@ class FSWorkoutForm(ModelForm):
             'time': TimePickerInput(),
         }
 
+class BikerWorkoutForm(ModelForm):
+    class Meta:
+        model = Workout
+        fields = ['distance','date_time', 'intensity', 'photo_evidence']
+        widgets = {
+            'date_time': DateTimePickerInput(),
+        }
 
 # @receiver(post_delete, sender=Workout)
 # def delete_workout(sender, instance, **kwargs):
