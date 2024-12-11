@@ -20,7 +20,7 @@ WTAPI = WebexTeamsAPI(access_token=os.environ.get("WT_TOKEN"))
 DATE_START = datetime(2024, 12, 11, 1, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
-DATE_END = datetime(2025, 1, 7, 0, 0, 0).replace(
+DATE_END = datetime(2025, 1, 8, 0, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
 
