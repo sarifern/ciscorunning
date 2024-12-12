@@ -9,7 +9,7 @@ cecs_who_joined = os.environ.get("CECS_WHO_JOINED").split(",")
 for cec in cecs_who_joined:
     try:
         # get profile
-        profile = Profile.objects.get(cec=cec)
+        profile = Profile.objects.get(cec=cec.lower())
         workout = Workout.objects.create(
             belongs_to=profile,
             distance=5,
@@ -26,6 +26,7 @@ for cec in cecs_who_joined:
         # check profile manually
         print(f"duplicated user {cec}, check manually")
     except Profile.DoesNotExist:
+        print(f"profile for user {cec} does not exist")
         pass
 
 markdown = f"Hey, thanks for attending the special event. \nFive extra kms have been granted to the following users: "
