@@ -31,7 +31,12 @@ if os.environ.get("DEBUG_PREF") != "False":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "ciscorunning.com","www.ciscorunning.com", ".herokuapp.com"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "ciscorunning.com",
+    "www.ciscorunning.com",
+    ".herokuapp.com",
+]
 
 
 DJANGO_APPS = [
@@ -44,6 +49,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "corsheaders",
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "badgify",
@@ -53,25 +59,27 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-
-
-   
-    'allauth.socialaccount.providers.google',
-   
-    'allauth.socialaccount.providers.strava',
-
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.strava",
     "storages",
     "widget_tweaks",
 ]
 LOCAL_APPS = [
     "ic_marathon_app",
 ]
+
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
+CORS_ALLOWED_ORIGINS = [
+    "https://ciscorunning2023.s3.amazonaws.com",
+    "https://ciscorunning.com",
+    "https://ciscorunning-8c8eb3820903.herokuapp.com",
+]
 BOOTSTRAP4 = {
     "include_jquery": True,
 }
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -88,7 +96,7 @@ ROOT_URLCONF = "ic_marathon_site.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'ic_marathon_app', 'templates')],
+        "DIRS": [os.path.join(BASE_DIR, "ic_marathon_app", "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -222,10 +230,10 @@ PRIVATE_FILE_STORAGE = "ic_marathon_site.storage_backends.PrivateMediaStorage"
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
-EMAIL_HOST = os.environ.get('MAILGUN_SMTP_SERVER', '')
-EMAIL_PORT = os.environ.get('MAILGUN_SMTP_PORT', '')
-EMAIL_HOST_USER = os.environ.get('MAILGUN_SMTP_LOGIN', '')
-EMAIL_HOST_PASSWORD = os.environ.get('MAILGUN_SMTP_PASSWORD', '')
+EMAIL_HOST = os.environ.get("MAILGUN_SMTP_SERVER", "")
+EMAIL_PORT = os.environ.get("MAILGUN_SMTP_PORT", "")
+EMAIL_HOST_USER = os.environ.get("MAILGUN_SMTP_LOGIN", "")
+EMAIL_HOST_PASSWORD = os.environ.get("MAILGUN_SMTP_PASSWORD", "")
 
 LOGGING = {
     "version": 1,

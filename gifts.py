@@ -4,6 +4,11 @@ from ic_marathon_app.views import check_badges, WTAPI
 import os
 import datetime
 
+def divide_into_batches(input_list, batch_size):
+    """Divide a list into batches of a specified size."""
+    for i in range(0, len(input_list), batch_size):
+        yield input_list[i:i + batch_size]
+
 cecs_who_joined = os.environ.get("CECS_WHO_JOINED").split(",")
 
 for cec in cecs_who_joined:
@@ -30,10 +35,17 @@ for cec in cecs_who_joined:
         pass
 
 markdown = f"Hey, thanks for attending the special event. \nFive extra kms have been granted to the following users: "
-for cec in cecs_who_joined:
-    markdown += f"<@personEmail:{cec}@cisco.com>,"
-markdown = markdown[:-1]
 WTAPI.messages.create(
     roomId=os.environ.get("WT_ROOMID"),
     markdown=markdown,
 )
+
+batches = list(divide_into_batches(cecs_who_joined, 15))
+for batch in batches:
+    markdown = ""
+    for cec in batch:
+        markdown += f"\n- <@personEmail:{cec}@cisco.com>"
+    WTAPI.messages.create(
+        roomId=os.environ.get("WT_ROOMID"),
+        markdown=markdown,
+    )
