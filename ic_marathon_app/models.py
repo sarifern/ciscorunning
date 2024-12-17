@@ -83,8 +83,7 @@ class Workout(models.Model):
     photo_evidence = models.ImageField(verbose_name="Evidence",
                                        validators=[validate_file_size],
                                        storage=PrivateMediaStorage())
-    date_time = models.DateTimeField(verbose_name="Date",
-                                     validators=[validate_date])
+    date_time = models.DateTimeField(verbose_name="Date")
     time = models.TimeField(verbose_name="Type",
                             help_text='Workout/Gift',
                           
@@ -100,12 +99,17 @@ class Workout(models.Model):
     is_gift = models.BooleanField(verbose_name="Gift?", help_text="Was this a gift (extra kms)?", default=False)
 
 class WorkoutForm(ModelForm):
+    
     class Meta:
         model = Workout
         fields = ['distance', 'date_time',  'photo_evidence']
         widgets = {
             'date_time': DateTimePickerInput(),
         }
+
+    def clean_date_time(self):
+        return validate_date(self.cleaned_data['date_time'])
+    
 
 
 class FSWorkoutForm(ModelForm):
