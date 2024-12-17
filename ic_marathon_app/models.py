@@ -107,7 +107,7 @@ class WorkoutForm(ModelForm):
             'date_time': DateTimePickerInput(),
         }
 
-    def clean_date_time(self):
+    def clean(self):
         return validate_date(self.cleaned_data['date_time'])
     
 

@@ -23,15 +23,19 @@
     <div class="section no-padding">
 
         <form method="POST" id="workoutForm" enctype="multipart/form-data">
-            {% csrf_token %} {{ form.non_field_errors }}
+            {% csrf_token %}
+            
             {% if form.errors %}
             <div class="alert alert-error">
                 <button type="button" class="close" data-dismiss="alert"><span class="icon-close"></span></button>
-                
+                {% if form.non_field_errors %}
+                    Date: {{ form.non_field_errors }}
+                {% endif %}
                 {% for field in form %} 
                     {% if field.errors %}
                     {{ field.label }}: {{ field.errors|striptags }}
                     {% endif %}
+                    
                 {% endfor %}
                
             </div>
