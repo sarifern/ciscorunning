@@ -5,8 +5,8 @@ from django.utils.html import format_html
 
 
 class WorkoutAdmin(admin.ModelAdmin):
-    list_display = ('is_audited', 'date_time', 'belongs_to', 'distance', 'image_tag')
-    list_filter = ['is_audited', 'belongs_to', 'date_time']
+    list_display = ('is_audited', 'date_time', 'uploaded_at', 'belongs_to', 'distance', 'image_tag')
+    list_filter = ['is_audited', 'belongs_to', 'uploaded_at', 'date_time']
 
     def image_tag(self, obj):
         if obj.photo_evidence:
