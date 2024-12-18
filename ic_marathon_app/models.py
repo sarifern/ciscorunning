@@ -107,7 +107,7 @@ class WorkoutForm(ModelForm):
             'date_time': DateTimePickerInput(),
         }
 
-    def clean(self):
+    def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
     
 
@@ -120,6 +120,8 @@ class FSWorkoutForm(ModelForm):
             'date_time': DateTimePickerInput(),
             'time': TimePickerInput(),
         }
+    def clean_date_time(self):
+        return validate_date(self.cleaned_data['date_time'])
 
 class BikerWorkoutForm(ModelForm):
     class Meta:
@@ -128,6 +130,8 @@ class BikerWorkoutForm(ModelForm):
         widgets = {
             'date_time': DateTimePickerInput(),
         }
+    def clean_date_time(self):
+        return validate_date(self.cleaned_data['date_time'])
 
 # @receiver(post_delete, sender=Workout)
 # def delete_workout(sender, instance, **kwargs):
