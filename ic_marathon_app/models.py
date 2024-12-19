@@ -153,6 +153,8 @@ def delete_workout(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Workout)
 def save_workout(sender, instance, **kwargs):
+    if instance.is_audited:
+        return
     # update personal distance
     profile = instance.belongs_to
     profile.distance += instance.distance
