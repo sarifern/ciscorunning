@@ -24,9 +24,10 @@ for cec in cecs_who_joined:
             date_time=str(datetime.datetime.now()),
             photo_evidence=None,
             is_gift=True,
-            is_audited=True,
+            is_audited=False,
         )
-
+        workout.is_audited = True
+        workout.save()
         print(f"user {cec} has been granted the gift")
         check_badges(profile.user)
     except MultipleObjectsReturned:
