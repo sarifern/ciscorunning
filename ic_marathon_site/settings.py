@@ -36,7 +36,7 @@ ALLOWED_HOSTS = [
     "ciscorunning.com",
     "www.ciscorunning.com",
     ".herokuapp.com",
-    f"{os.environ.get("HOSTING_DOMAIN")}"
+    f"{os.environ.get('HOSTING_DOMAIN')}"
 ]
 
 
