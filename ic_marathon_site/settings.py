@@ -119,10 +119,10 @@ WSGI_APPLICATION = "ic_marathon_site.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "ic-marathon",
+        "NAME": "icmarathon",
         "USER": "admin",
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
-        "HOST": "localhost",
+        "HOST":  os.environ.get("POSTGRES_HOST"),
         "PORT": "",
     }
 }
