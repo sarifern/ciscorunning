@@ -39,13 +39,13 @@ services:
   - key: CECS_WHO_JOINED
     value: sarifern
   - key: DEBUG_PREF
-    value: true
+    value: True
   - key: WT_ROOMID
     value: 'Y2lzY29zcGFyazovL3VzL1JPT00vMmIwZDFiYjAtNzgyMC0xMWVlLWE5NWUtMjM1MWRjMjM1NDlk'
   - key: WT_TOKEN
     sync: false
   - key: AWS_BUCKET_NAME
-    value: 'ciscorunning'
+    value: 'ciscorunning2023'
   - key: AWS_ACCESS_KEY_ID
     sync: false
   - key: AWS_USER
