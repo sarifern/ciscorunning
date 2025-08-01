@@ -1,0 +1,57 @@
+# Exported from Render on 2025-08-01T21:33:14Z
+databases:
+- name: ciscorunningbeta
+  databaseName: icmarathon
+  user: admin
+  plan: free
+  region: oregon
+  ipAllowList:
+  - source: 0.0.0.0/0
+    description: everywhere
+  postgresMajorVersion: "16"
+services:
+- type: web
+  name: ciscorunningbeta
+  runtime: python
+  repo: https://github.com/sarifern/ciscorunning
+  plan: free
+  envVars:
+  - key: MEMCACHEDCLOUD_PASSWORD
+    sync: false
+  - key: MEMCACHEDCLOUD_USERNAME
+    sync: false
+  - key: POSTGRES_HOST
+    fromDatabase:
+      name: ciscorunningbeta
+      property: host
+  - key: POSTGRES_PASSWORD
+    fromDatabase:
+      name: ciscorunningbeta
+      property: password
+  - key: HOSTING_DOMAIN
+    value: 'ciscorunningbeta.onrender.com'
+  - key: AWS_SECRET_ACCESS_KEY
+    sync: false
+  - key: DJANGO_SECRET_KEY
+    generateValue: true
+  - key: MEMCACHEDCLOUD_SERVERS
+    sync: false
+  - key: CECS_WHO_JOINED
+    value: sarifern
+  - key: DEBUG_PREF
+    value: true
+  - key: WT_ROOMID
+    value: 'Y2lzY29zcGFyazovL3VzL1JPT00vMmIwZDFiYjAtNzgyMC0xMWVlLWE5NWUtMjM1MWRjMjM1NDlk'
+  - key: WT_TOKEN
+    sync: false
+  - key: AWS_BUCKET_NAME
+    value: 'ciscorunning'
+  - key: AWS_ACCESS_KEY_ID
+    sync: false
+  - key: AWS_USER
+    sync: false
+  region: oregon
+  buildCommand: 'pip install -r requirements.txt '
+  startCommand: gunicorn ic_marathon_site.wsgi --log-file -
+  autoDeployTrigger: commit
+version: "1"
