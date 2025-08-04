@@ -27,7 +27,6 @@ urlpatterns = [
     path("my_profile/", views.my_profile, name="my_profile"),
     path("add_workout/", views.add_workout, name="add_workout"),
     path("add_workout_fs/", views.add_workout_fs, name="add_workout_fs"),
-    path("add_workout_biker/", views.add_workout_biker,name="add_workout_biker"),
     path("delete_workout/<uuid>/", views.delete_workout, name="delete_workout"),
     path("leaderboard/", views.leaderboard, name="leaderboard"),
 

@@ -7,8 +7,7 @@
         <a href="{% url 'add_workout' %}"> <i class="fa fa-plus-square"></i></a>
         {% elif active == True and "freestyler" in category %}
         <a href="{% url 'add_workout_fs' %}"> <i class="fa fa-plus-square"></i></a>
-        {% elif active == True and "biker" in category %}
-        <a href="{% url 'add_workout_biker' %}"> <i class="fa fa-plus-square"></i></a>
+        
         {% else %}
         <div class="alert alert--info">
             <div class="alert__icon icon-info-outline"></div>

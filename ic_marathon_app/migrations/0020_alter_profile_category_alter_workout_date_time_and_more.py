@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='profile',
             name='category',
-            field=models.CharField(choices=[('beginnerrunner', 'Beginner Runner'), ('runner', 'Runner'), ('biker', 'Biker'), ('freestyler', 'Freestyler'), ('advfreestyler', 'Advanced Freestyler')], default='beginnerrunner', max_length=20),
+            field=models.CharField(choices=[('beginnerrunner', 'Beginner Runner'), ('runner', 'Runner'), ('freestyler', 'Freestyler')], default='beginnerrunner', max_length=20),
         ),
         migrations.AlterField(
             model_name='workout',

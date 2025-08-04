@@ -15,16 +15,7 @@
         window.location.href = "/";
     }
 
-    document.addEventListener("DOMContentLoaded", function(event) {
-        var select = document.getElementById("id_intensity");
-        var category = "{{user.profile.category}}";
-        if (category == "freestyler"){
-            select.remove(2)
-        }else{
-            select.remove(1)
-            select.remove(0)
-        }
-    });
+   
         
 </script>
 
@@ -57,6 +48,11 @@
             <div class="form-group text-normal">
                 <div class="qtr-padding-bottom ">
                     <label>Duration(hrs:min:seg)</label> {{ form.time }}
+                </div>
+            </div>
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom ">
+                    <label>Sport</label> {{ form.sport }}
                 </div>
             </div>
             <div class="form-group text-normal">

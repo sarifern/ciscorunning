@@ -1,0 +1,66 @@
+from django.db import migrations
+
+def add_initial_sports(apps, schema_editor):
+    Sport = apps.get_model('ic_marathon_app', 'Sport')
+    IntensityLevel = apps.get_model('ic_marathon_app', 'IntensityLevel')
+    SportIntensityMapping = apps.get_model('ic_marathon_app', 'SportIntensityMapping')
+
+    sports = [
+        "Running", "Cycling", "Soccer", "Basketball", "Swimming",
+        "Yoga", "Tennis", "Rowing", "Dancing", "Hiking",
+        "Elliptical", "Pilates", "Boxing", "Football (American)", "Volleyball"
+    ]
+    intensities = [
+        ("Light",),
+        ("Moderate",),
+        ("High",),
+    ]
+    intensity_map = {
+        "Light": 0,
+        "Moderate": 1,
+        "High": 2,
+    }
+    # Predefined km/hr mapping (example; customize as you wish)
+    km_data = {
+        "Running":      [7.0, 10.0, 13.0],
+        "Cycling":      [10.0, 20.0, 30.0],
+        "Soccer":       [3.0, 4.0, 5.0],
+        "Basketball":   [3.5, 5.0, 6.5],
+        "Swimming":     [2.0, 3.0, 4.0],
+        "Yoga":         [2.5, 3.0, 3.5],
+        "Tennis":       [2.5, 4.0, 5.5],
+        "Rowing":       [5.0, 8.0, 10.0],
+        "Dancing":      [3.0, 4.5, 6.0],
+        "Hiking":       [4.0, 6.0, 8.0],
+        "Elliptical":   [4.0, 7.0, 9.0],
+        "Pilates":      [2.0, 2.5, 3.0],
+        "Boxing":       [3.0, 5.0, 7.0],
+        "Football (American)": [3.0, 4.5, 6.0],
+        "Volleyball":   [2.0, 3.0, 4.0],
+    }
+
+    # Create IntensityLevels if not already present
+    for intensity, in intensities:
+        IntensityLevel.objects.get_or_create(name=intensity)
+
+    # Create Sports and SportIntensityMappings
+    for sport_name in sports:
+        sport, _ = Sport.objects.get_or_create(name=sport_name)
+        for intensity, in intensities:
+            intensity_obj = IntensityLevel.objects.get(name=intensity)
+            km_per_hour = km_data[sport_name][intensity_map[intensity]]
+            SportIntensityMapping.objects.get_or_create(
+                sport=sport,
+                intensity=intensity_obj,
+                defaults={'km_per_hour': km_per_hour}
+            )
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('ic_marathon_app', '0021_intensitylevel_sport_workout_sport_and_more'),
+    ]
+
+    operations = [ migrations.RunPython(add_initial_sports),
+    ]

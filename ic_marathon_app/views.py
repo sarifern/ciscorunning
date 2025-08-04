@@ -1,7 +1,7 @@
 from allauth.socialaccount.models import SocialAccount
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
-from .models import BikerWorkoutForm, ProfileForm, Profile, Workout, WorkoutForm, FSWorkoutForm
+from .models import ProfileForm, Profile, SportIntensityMapping, Workout, WorkoutForm, FSWorkoutForm
 from badgify.models import Award, Badge
 from django.shortcuts import redirect, render, get_object_or_404
 from .tables import WorkoutTable, ProfileTable
@@ -158,6 +158,15 @@ def my_workouts(request):
         },
     )
 
+def convert_to_km(sport_name, intensity_name, duration_minutes):
+    try:
+        mapping = SportIntensityMapping.objects.get(
+            sport__name=sport_name,
+            intensity__name=intensity_name
+        )
+        return mapping.km_per_hour * (duration_minutes / 60.0)
+    except SportIntensityMapping.DoesNotExist:
+        return None  # or handle gracefully
 
 @login_required
 def add_workout_fs(request):
@@ -173,16 +182,8 @@ def add_workout_fs(request):
         form = FSWorkoutForm(request.POST, request.FILES)
         form.instance.belongs_to = request.user.profile
         if form.is_valid():
-            # add table
-            if form.instance.intensity == "light":
-                factor = 0.85
-            elif form.instance.intensity == "medium":
-                factor = 1
-            elif form.instance.intensity == "high":
-                factor = 1
-            form.instance.distance = float_to_decimal(
-                (form.instance.time.hour * 60 + form.instance.time.minute) / 12 * factor
-            )
+            form.instance.distance = convert_to_km(form.instance.sport, form.instance.intensity, form.instance.time.hour * 60 + form.instance.time.minute)
+            
             form.save()
             new_badges = check_badges(request.user)
             if new_badges:
@@ -224,66 +225,6 @@ def add_workout_fs(request):
             },
         )
 
-@login_required
-def add_workout_biker(request):
-    """View to handle the Add Workout form for biker category
-
-    Arguments:
-        request {Request} -- The Request from the browser
-
-    Returns:
-        rendered template -- Rendered template regarding successful or failed workout add
-    """
-    if request.method == "POST":
-        form = BikerWorkoutForm(request.POST, request.FILES)
-        form.instance.belongs_to = request.user.profile
-        if form.is_valid():
-            # add table
-            if form.instance.intensity == "medium":
-                factor = decimal.Decimal(1)
-            elif form.instance.intensity == "high":
-                factor = decimal.Decimal(1.5)
-            form.instance.distance =form.instance.distance * factor
-            form.save()
-            new_badges = check_badges(request.user)
-            if new_badges:
-                try:
-                    for badge in new_badges:
-                        if badge.slug == "ownK":
-                            WTAPI.messages.create(
-                                roomId=os.environ.get("WT_ROOMID"),
-                                markdown=f"Congratulations <@personEmail:{request.user.profile.cec}@cisco.com> for achieving your badge!\n Keep it up!"
-                            )
-                    pass
-                except ApiError:
-                    pass
-                return render(
-                    request,
-                    "ic_marathon_app/add_workoutbiker.html",
-                    {
-                        "form": form,
-                        "new_badges": new_badges,
-                    },
-                )
-            else:
-                return redirect("home")
-        else:
-            return render(
-                request,
-                "ic_marathon_app/add_workoutbiker.html",
-                {
-                    "form": form,
-                },
-            )
-    else:
-        form = BikerWorkoutForm()
-        return render(
-            request,
-            "ic_marathon_app/add_workoutbiker.html",
-            {
-                "form": form,
-            },
-        )
 
 @login_required
 def add_workout(request):
@@ -377,9 +318,7 @@ def leaderboard(request):
     
     leaders_br = Profile.objects.filter(category="beginnerrunner").order_by("-distance")
     leaders_r = Profile.objects.filter(category="runner").order_by("-distance")
-    leaders_b = Profile.objects.filter(category="biker").order_by("-distance")
     leaders_f = Profile.objects.filter(category="freestyler").order_by("-distance")
-    leaders_af = Profile.objects.filter(category="advfreestyler").order_by("-distance")
 
     total_workouts = Workout.objects.all()
     total_kms = 0
@@ -387,30 +326,23 @@ def leaderboard(request):
         total_kms += workout.distance
     table_leaders_br = ProfileTable(leaders_br, prefix="leaders-br-")
     table_leaders_r = ProfileTable(leaders_r, prefix="leaders-r-")
-    table_leaders_b = ProfileTable(leaders_b, prefix="leaders-b-")
     table_leaders_f = ProfileTable(leaders_f, prefix="leaders-f-")
-    table_leaders_af = ProfileTable(leaders_af, prefix="leaders-af-")
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_br)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_r)
-    RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_b)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_f)
-    RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_af)
 
     list_tables = [(table_leaders_br,len(leaders_br),"Beginner Runners"),
                    (table_leaders_r,len(leaders_r),"Runners"),
-                   (table_leaders_b,len(leaders_b),"Bikers"),
-                   (table_leaders_f,len(leaders_f),"Freestylers"),
-                   (table_leaders_af,len(leaders_af),"Advanced Freestylers")]
+                   (table_leaders_f,len(leaders_f),"Freestylers")]
 
     match request.user.profile.category:
+        case "beginnerrunner":
+            list_tables.insert(0, list_tables.pop(0))
         case "runner":
             list_tables.insert(0, list_tables.pop(1))
-        case "biker":
-            list_tables.insert(0, list_tables.pop(2))
         case "freestyler":
-            list_tables.insert(0, list_tables.pop(3))
-        case "advfreestyler":
-            list_tables.insert(0, list_tables.pop(4))
+            list_tables.insert(0, list_tables.pop(2))
+
 
     return render(
         request,

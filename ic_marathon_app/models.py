@@ -19,22 +19,49 @@ import q
 # Create your models here.
 BEGINNERRUNNER = "beginnerrunner"
 RUNNER = "runner"
-BIKER = "biker"
 FREESTYLER = "freestyler"
-ADVANCEDFREESTYLER = "advfreestyler"
-
 CATEGORY_CHOICES = ((BEGINNERRUNNER,
-                     'Beginner Runner'), (RUNNER, 'Runner'), (BIKER, 'Biker'),
-                    (FREESTYLER, 'Freestyler'), (ADVANCEDFREESTYLER, 'Advanced Freestyler'))
+                     'Beginner Runner'), (RUNNER, 'Runner'),
+                    (FREESTYLER, 'Freestyler'))
 
-# Intensity choices
 
-LIGHT = "light"
-MEDIUM = "medium"
-HIGH = "high"
+class Sport(models.Model):
+    name = models.CharField(max_length=100, unique=True)
 
-INTENSITY_CHOICES = ((LIGHT,"Light"),
-(MEDIUM,"Medium"),(HIGH,"High"))
+    class Meta:
+        verbose_name = "Sport"
+        verbose_name_plural = "Sports"
+
+    def __str__(self):
+        return self.name
+
+class IntensityLevel(models.Model):
+    LEVEL_CHOICES = [
+        ('Light', 'Light'),
+        ('Moderate', 'Moderate'),
+        ('High', 'High'),
+    ]
+    name = models.CharField(max_length=10, choices=LEVEL_CHOICES, unique=True)
+
+    class Meta:
+        verbose_name = "Intensity Level"
+        verbose_name_plural = "Intensity Levels"
+
+    def __str__(self):
+        return self.name
+
+class SportIntensityMapping(models.Model):
+    sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
+    intensity = models.ForeignKey(IntensityLevel, on_delete=models.CASCADE)
+    km_per_hour = models.FloatField(help_text="Kilometers equivalent for 1 hour at this intensity.")
+
+    class Meta:
+        unique_together = ('sport', 'intensity')
+        verbose_name = "Sport Intensity Mapping"
+        verbose_name_plural = "Sport Intensity Mappings"
+
+    def __str__(self):
+        return f"{self.sport} - {self.intensity} ({self.km_per_hour} km/hr)"
 
 
 class Profile(models.Model):
@@ -88,11 +115,9 @@ class Workout(models.Model):
                             help_text='Workout/Gift',
                           
                             default='00:00')
-    intensity = models.CharField(verbose_name="Intensity",
-                                max_length=10,
-                                choices=INTENSITY_CHOICES,
-                                blank=False,
-                                default=HIGH)
+    sport = models.ForeignKey(Sport, on_delete=models.CASCADE, default='Running')
+    intensity = models.ForeignKey(IntensityLevel, on_delete=models.CASCADE, default='Moderate')
+    
     is_audited = models.BooleanField(verbose_name="Audited?",
                                   help_text="Already audited?",
                                   default=False)
@@ -115,7 +140,7 @@ class WorkoutForm(ModelForm):
 class FSWorkoutForm(ModelForm):
     class Meta:
         model = Workout
-        fields = ['date_time','time', 'intensity', 'photo_evidence']
+        fields = ['date_time','time','sport', 'intensity', 'photo_evidence']
         widgets = {
             'date_time': DateTimePickerInput(),
             'time': TimePickerInput(),
@@ -123,15 +148,6 @@ class FSWorkoutForm(ModelForm):
     def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
 
-class BikerWorkoutForm(ModelForm):
-    class Meta:
-        model = Workout
-        fields = ['distance','date_time', 'intensity', 'photo_evidence']
-        widgets = {
-            'date_time': DateTimePickerInput(),
-        }
-    def clean_date_time(self):
-        return validate_date(self.cleaned_data['date_time'])
 
 @receiver(post_delete, sender=Workout)
 def delete_workout(sender, instance, **kwargs):
@@ -157,7 +173,7 @@ def save_workout(sender, instance, **kwargs):
         return
     # update personal distance
     profile = instance.belongs_to
-    profile.distance += instance.distance
+    profile.distance += Decimal(instance.distance)
     if profile.distance >= 84.0 and profile.category == "beginnerrunner":
         profile.category = "runner"
     if profile.distance >= profile.user_goal_km:
