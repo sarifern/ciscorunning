@@ -115,9 +115,9 @@ class Workout(models.Model):
                             help_text='Workout/Gift',
                           
                             default='00:00')
-    sport = models.ForeignKey(Sport, on_delete=models.CASCADE, default='Running')
-    intensity = models.ForeignKey(IntensityLevel, on_delete=models.CASCADE, default='Moderate')
-    
+    sport = models.ForeignKey(Sport, on_delete=models.CASCADE, default=None)
+    intensity = models.ForeignKey(IntensityLevel, on_delete=models.CASCADE, default=None)
+
     is_audited = models.BooleanField(verbose_name="Audited?",
                                   help_text="Already audited?",
                                   default=False)

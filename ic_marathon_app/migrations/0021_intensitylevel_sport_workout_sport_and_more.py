@@ -36,12 +36,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='workout',
             name='sport',
-            field=models.ForeignKey(default='Running', on_delete=django.db.models.deletion.CASCADE, to='ic_marathon_app.sport'),
+            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='ic_marathon_app.sport'),
         ),
         migrations.AlterField(
             model_name='workout',
             name='intensity',
-            field=models.ForeignKey(default='Moderate', on_delete=django.db.models.deletion.CASCADE, to='ic_marathon_app.intensitylevel'),
+            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='ic_marathon_app.intensitylevel'),
         ),
         migrations.CreateModel(
             name='SportIntensityMapping',
