@@ -28,6 +28,10 @@ services:
     fromDatabase:
       name: ciscorunningbeta
       property: password
+  - key: POSTGRES_DB
+    fromDatabase:
+      name: ciscorunningbeta
+      property: database
   - key: HOSTING_DOMAIN
     value: 'ciscorunningbeta.onrender.com'
   - key: AWS_SECRET_ACCESS_KEY

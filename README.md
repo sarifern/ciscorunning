@@ -174,36 +174,37 @@ get-content .secrets | foreach {
      $name, $value = $_.split('=')
      set-content env:\$name $value
  }
+$env:ENVIRONMENT='local_settings'
 ``` 
 
 9. Collect static files (only if the bucket was recently created)
 
 ``` 
-python manage.py collectstatic --settings=ic_marathon_site.local_settings
+python manage.py collectstatic --settings=ic_marathon_site.$env:ENVIRONMENT
 ``` 
 
 10. Setup the badging system
 
 ``` 
-python manage.py makemigrations badgify --settings=ic_marathon_site.local_settings
-python manage.py migrate badgify --settings=ic_marathon_site.local_settings
-python manage.py badgify_sync badges --settings=ic_marathon_site.local_settings
-python manage.py badgify_reset --settings=ic_marathon_site.local_settings
-python manage.py badgify_sync awards --disable-signals --settings=ic_marathon_site.local_settings
-python manage.py badgify_sync counts --settings=ic_marathon_site.local_settings
+python manage.py makemigrations badgify --settings=ic_marathon_site.$env:ENVIRONMENT
+python manage.py migrate badgify --settings=ic_marathon_site.$env:ENVIRONMENT
+python manage.py badgify_sync badges --settings=ic_marathon_site.$env:ENVIRONMENT
+python manage.py badgify_reset --settings=ic_marathon_site.$env:ENVIRONMENT
+python manage.py badgify_sync awards --disable-signals --settings=ic_marathon_site.$env:ENVIRONMENT
+python manage.py badgify_sync counts --settings=ic_marathon_site.$env:ENVIRONMENT
 ``` 
 
 11. Make the DB migrations
 
 ``` 
-python manage.py makemigrations --settings=ic_marathon_site.local_settings
-python manage.py migrate --settings=ic_marathon_site.local_settings
+python manage.py makemigrations --settings=ic_marathon_site.$env:ENVIRONMENT
+python manage.py migrate --settings=ic_marathon_site.$env:ENVIRONMENT
 ```
 
 12. Run the initialize_badges.py script
 
 ``` 
-python manage.py shell  --settings=ic_marathon_site.local_settings
+python manage.py shell  --settings=ic_marathon_site.$env:ENVIRONMENT
 >>> exec(open('initialize_badges.py').read())
 >>> exit()
 ``` 
@@ -211,12 +212,12 @@ python manage.py shell  --settings=ic_marathon_site.local_settings
 13. Create a superuser
 
 ``` 
-python manage.py createsuperuser --settings=ic_marathon_site.local_settings
+python manage.py createsuperuser --settings=ic_marathon_site.$env:ENVIRONMENT
 ```  
 
 14. Create a cache table
 ``` 
-python manage.py createcachetable --settings=ic_marathon_site.local_settings
+python manage.py createcachetable --settings=ic_marathon_site.$env:ENVIRONMENT
 ``` 
 # Running the project locally
 
@@ -224,7 +225,7 @@ In VSCode, you can use the debugging option, as the .vscode/launch.json has the 
 Manually, the command would be
 
 ``` 
-python manage.py runsslserver --settings=ic_marathon_site.local_settings
+python manage.py runsslserver --settings=ic_marathon_site.$env:ENVIRONMENT
 ``` 
 
 # Heroku deployment
