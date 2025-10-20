@@ -17,11 +17,35 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from ic_marathon_app import views
+from ic_marathon_app import auth_views as ic_auth_views
+from rest_framework import routers
+from ic_marathon_app import models
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
+
+
+
+router = routers.DefaultRouter()
+router.register(r'workouts', models.WorkoutViewSet, 'workout')
+router.register(r'profiles', models.ProfileViewSet, 'profile')
+router.register(r'reference-data', models.ReferenceDataViewSet, 'reference-data')
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("", views.home, name="home"),
     
+    # API Routes
+    path('api/', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls')),
+    
+    # API Authentication
+    path('api/auth/strava/', ic_auth_views.strava_token_auth, name='strava-token-auth'),
+    
+    # API Documentation (Swagger UI - Modern, interactive API docs)
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    
+    # Legacy Web Routes (for admin/auditing only)
+    path("", views.home, name="home"),
     path("profile_wizard/", views.profile_wizard, name="profile_wizard"),
     path("my_workouts/", views.my_workouts, name="my_workouts"),
     path("my_profile/", views.my_profile, name="my_profile"),
@@ -31,7 +55,6 @@ urlpatterns = [
     path("leaderboard/", views.leaderboard, name="leaderboard"),
 
     path('accounts/', include('allauth.urls')),
-    
     path('select2/', include('django_select2.urls')),
     path('badges/',include('badgify.urls')),
 ]

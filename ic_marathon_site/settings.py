@@ -64,6 +64,9 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount.providers.strava",
     "storages",
     "widget_tweaks",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "drf_spectacular",
 ]
 LOCAL_APPS = [
     "ic_marathon_app",
@@ -250,4 +253,42 @@ LOGGING = {
             "level": os.getenv("DJANGO_LOG_LEVEL", "ERROR"),
         },
     },
+}
+
+# REST Framework Settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'ic_marathon_site.authentication.BearerTokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Cisco Running API',
+    'DESCRIPTION': 'API for the Cisco Running Marathon Challenge',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SECURITY': [
+        {
+            'tokenAuth': []
+        }
+    ],
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'tokenAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'Token',
+                'description': 'Enter your token value (the "Bearer" prefix will be added automatically)'
+            }
+        }
+    },
+    'PREPROCESSING_HOOKS': [
+        'ic_marathon_site.spectacular_hooks.token_auth_preprocessing_hook',
+    ],
 }

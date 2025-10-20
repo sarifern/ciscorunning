@@ -66,8 +66,12 @@
                             <span tabindex="0" data-balloon="Runner" data-balloon-pos="up"><img
                                     src="{% static 'img/br.svg' %}" style="width: 50px"><img
                                     src="{% static 'img/br.svg' %}" style="width: 50px">
-                        </div></span>  {% elif user.profile.category == "freestyler" %}
+                        </div></span>  {% elif user.profile.category == "beginnerfreestyler" %}
+                    <span tabindex="0" data-balloon="Beginner&#10;Freestyler" data-balloon-break
+                            data-balloon-pos="up"><img src="{% static 'img/fs.svg' %}" style="width: 50px">
+                </div></span>  {% elif user.profile.category == "freestyler" %}
                     <span tabindex="0" data-balloon="Freestyler" data-balloon-pos="up"><img
+                            src="{% static 'img/fs.svg' %}" style="width: 50px"><img
                             src="{% static 'img/fs.svg' %}" style="width: 50px">
                 </div></span>  {% endif %}
     </div>

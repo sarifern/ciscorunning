@@ -318,6 +318,7 @@ def leaderboard(request):
     
     leaders_br = Profile.objects.filter(category="beginnerrunner").order_by("-distance")
     leaders_r = Profile.objects.filter(category="runner").order_by("-distance")
+    leaders_bf = Profile.objects.filter(category="beginnerfreestyler").order_by("-distance")
     leaders_f = Profile.objects.filter(category="freestyler").order_by("-distance")
 
     total_workouts = Workout.objects.all()
@@ -326,13 +327,16 @@ def leaderboard(request):
         total_kms += workout.distance
     table_leaders_br = ProfileTable(leaders_br, prefix="leaders-br-")
     table_leaders_r = ProfileTable(leaders_r, prefix="leaders-r-")
+    table_leaders_bf = ProfileTable(leaders_bf, prefix="leaders-bf-")
     table_leaders_f = ProfileTable(leaders_f, prefix="leaders-f-")
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_br)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_r)
+    RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_bf)
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_f)
 
     list_tables = [(table_leaders_br,len(leaders_br),"Beginner Runners"),
                    (table_leaders_r,len(leaders_r),"Runners"),
+                   (table_leaders_bf,len(leaders_bf),"Beginner Freestylers"),
                    (table_leaders_f,len(leaders_f),"Freestylers")]
 
     match request.user.profile.category:
@@ -340,8 +344,10 @@ def leaderboard(request):
             list_tables.insert(0, list_tables.pop(0))
         case "runner":
             list_tables.insert(0, list_tables.pop(1))
-        case "freestyler":
+        case "beginnerfreestyler":
             list_tables.insert(0, list_tables.pop(2))
+        case "freestyler":
+            list_tables.insert(0, list_tables.pop(3))
 
 
     return render(
@@ -414,7 +420,12 @@ def check_badges(user):
         new_badges {[Award]} -- list of Award objects
     """
     distance = user.profile.distance
+    current_streak = user.profile.current_streak
+    longest_streak = user.profile.longest_streak
+    
     new_badges = []
+    
+    # Distance badges
     if distance >= 10.0:
         new_badge = award_badge(user=user, slug="10K")
         if new_badge:
@@ -443,6 +454,20 @@ def check_badges(user):
         new_badge = award_badge(user=user, slug="ownK")
         if new_badge:
             new_badges.append(new_badge)
+    
+    # Streak badges (based on longest streak achieved, not current)
+    if longest_streak >= 7:
+        new_badge = award_badge(user=user, slug="7day-streak")
+        if new_badge:
+            new_badges.append(new_badge)
+    if longest_streak >= 14:
+        new_badge = award_badge(user=user, slug="14day-streak")
+        if new_badge:
+            new_badges.append(new_badge)
+    if longest_streak >= 21:
+        new_badge = award_badge(user=user, slug="21day-streak")
+        if new_badge:
+            new_badges.append(new_badge)
 
     return new_badges
 
@@ -454,6 +479,9 @@ def strip_badges(user):
         user {User} -- Session User
     """
     distance = user.profile.distance
+    longest_streak = user.profile.longest_streak
+    
+    # Distance badges
     if distance < 168.0 and get_award(user, slug="168K"):
         get_award(user, slug="168K").delete()
     if distance < 126.0 and get_award(user, slug="126K"):
@@ -468,6 +496,15 @@ def strip_badges(user):
         get_award(user, slug="10K").delete()
     if distance < user.profile.user_goal_km and get_award(user, slug="ownK"):
         get_award(user, slug="ownK").delete()
+    
+    # Streak badges (based on longest streak, never removed once earned)
+    # Note: longest_streak never decreases, so these badges stay forever
+    if longest_streak < 21 and get_award(user, slug="21day-streak"):
+        get_award(user, slug="21day-streak").delete()
+    if longest_streak < 14 and get_award(user, slug="14day-streak"):
+        get_award(user, slug="14day-streak").delete()
+    if longest_streak < 7 and get_award(user, slug="7day-streak"):
+        get_award(user, slug="7day-streak").delete()
 
 
 def award_badge(user, slug):
