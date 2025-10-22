@@ -61,8 +61,7 @@
    [7] Authenticate with backend                                          │
        POST /api/auth/strava/                                             │
        {                                                                  │
-         strava_access_token: "strava_token_xxx",                         │
-         username: "johndoe"                                              │
+         strava_access_token: "strava_token_xxx"                                               │
        }                                                                  │
        │                                     │                            │
        │                                     │─────────────────────────────>
@@ -157,7 +156,8 @@
   [24] │    User fills form:                                              │ │
        │    - CEC ID                                                      │ │
        │    - Goal (km)                                                   │ │
-       │    - Category (runner/freestyler)                                │ │
+       │    - Category (runner/freestyler) 
+            - Avatar picture(prefilled by last response)                  │ │
        │                                                                  │ │
   [25] │─────────────────────────────────────>                            │ │
        │    POST /api/profiles/me/                                        │ │
@@ -166,6 +166,7 @@
        │      cec: "johndoe",                                             │ │
        │      user_goal_km: "42.00",                                      │ │
        │      category: "runner"                                          │ │
+       │      avatar: "https://lh3.googleusercontent.com/a/               │ | │ACg8ocLddd8wCRRQgLkims3zuim1fc6ifmfLKZ-M2AVXXXXXXXX"              | |
        │    }                                                             │ │
        │                                     │                            │ │
        │                                     │──────────────────────────────>│

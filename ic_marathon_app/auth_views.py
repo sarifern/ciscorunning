@@ -136,6 +136,7 @@ def strava_token_auth(request):
             }, status=status.HTTP_401_UNAUTHORIZED)
         
         strava_user_data = strava_response.json()
+        strava_avatar = str(strava_user_data.get('profile'))
         strava_id = str(strava_user_data.get('id'))
         
         # Extract username from Strava data, fallback to strava_ID if no username
@@ -198,6 +199,7 @@ def strava_token_auth(request):
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'avatar': strava_avatar,
             'strava_id': strava_id
         },
         'created': created  # True if new user was created
