@@ -31,8 +31,22 @@
             Beginner Freestyler{% elif user.profile.category == "advfreestyler"%}Advanced Freestyler{% else %}
             {{user.profile.category }} {% endif %}             
           </span>
-          
         </div>
+        
+        <!-- Category Change Section -->
+        {% if can_change_category %}
+        <div class="flex flex-center base-margin-top">
+          <button type="button" class="btn btn--small btn--ghost" onclick="showCategoryChangeModal()">
+            <span class="icon-edit"></span> Change Category
+          </button>
+        </div>
+        {% else %}
+        <div class="flex flex-center base-margin-top">
+          <span class="text-size-12 text-gray-600"
+            ><em>Category already changed</em></span
+          >
+        </div>
+        {% endif %}
         <div class="flex flex-center">
           <span class="text-size-14 text-gray-700 text-capitalize"
             >My Goal - {{user.profile.user_goal_km}}km</span
@@ -185,5 +199,126 @@
     </div>
   </div>
 </div>
+
+<!-- Category Change Modal -->
+<div class="modal modal-default fade" id="category-change-modal">
+  <div class="modal__dialog">
+    <div class="modal__content">
+      <a class="modal__close" onclick="closeCategoryChangeModal()">
+        <span class="icon-close"></span>
+      </a>
+      
+      <div class="modal__header">
+        <h3 class="modal__title">Change Your Category</h3>
+      </div>
+      
+      <div class="modal__body">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+        
+        <div class="alert alert-warning">
+          <strong>⚠️ Important Rules:</strong>
+          <ul style="margin-top: 10px; margin-bottom: 0;">
+            <li>You can only change your category <strong>once</strong></li>
+            <li>Changes are only allowed <strong>before reaching 50km</strong></li>
+            <li>Your workouts and distance will <strong>carry over</strong> to the new category</li>
+            <li>You'll restart as a <strong>beginner</strong> in the new track</li>
+          </ul>
+        </div>
+        
+        <div class="alert alert-info">
+          <strong>Your Progress:</strong> {{user.profile.distance}}km completed
+          {% if user.profile.first_workout_date %}
+            | Member since {{user.profile.first_workout_date|date:"M d, Y"}}
+          {% endif %}
+        </div>
+        
+        <form method="POST" id="categoryChangeForm">
+          {% csrf_token %}
+          <input type="hidden" name="change_category" value="1">
+          
+          <div class="form-group">
+            <p class="base-margin-bottom">
+              <strong>Current Category:</strong> 
+              <span class="text-capitalize">
+                {% if current_category_intent == "runner" %}Runner{% else %}Freestyler{% endif %}
+              </span>
+            </p>
+            
+            <label class="base-margin-bottom">Select New Category:</label>
+            
+            <div class="radio-group base-margin-bottom">
+              <label class="radio">
+                <input type="radio" name="new_category" value="runner" 
+                  {% if current_category_intent == "runner" %}disabled{% endif %}>
+                <span class="radio__input"></span>
+                <span class="radio__label">
+                  <strong>Runner</strong> - Track running activities
+                  {% if current_category_intent == "runner" %}
+                    <span class="text-gray-600">(Current)</span>
+                  {% endif %}
+                </span>
+              </label>
+            </div>
+            
+            <div class="radio-group">
+              <label class="radio">
+                <input type="radio" name="new_category" value="freestyler" 
+                  {% if current_category_intent == "freestyler" %}disabled{% endif %}>
+                <span class="radio__input"></span>
+                <span class="radio__label">
+                  <strong>Freestyler</strong> - Track any sport/activity
+                  {% if current_category_intent == "freestyler" %}
+                    <span class="text-gray-600">(Current)</span>
+                  {% endif %}
+                </span>
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal__footer">
+        <button class="btn btn--ghost" onclick="closeCategoryChangeModal()">Cancel</button>
+        <button class="btn btn--primary" onclick="submitCategoryChange()">
+          Confirm Change
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showCategoryChangeModal() {
+    var modal = document.getElementById('category-change-modal');
+    modal.className = "modal modal-default show";
+  }
+  
+  function closeCategoryChangeModal() {
+    var modal = document.getElementById('category-change-modal');
+    modal.className = "modal modal-default fade";
+  }
+  
+  function submitCategoryChange() {
+    var form = document.getElementById('categoryChangeForm');
+    var selectedCategory = document.querySelector('input[name="new_category"]:checked');
+    
+    if (!selectedCategory) {
+      alert('Please select a category to change to.');
+      return;
+    }
+    
+    // Confirm the change
+    var categoryName = selectedCategory.value === 'runner' ? 'Runner' : 'Freestyler';
+    if (confirm('Are you sure you want to change to ' + categoryName + '? This can only be done once!')) {
+      form.submit();
+    }
+  }
+</script>
 
 {% endblock %}

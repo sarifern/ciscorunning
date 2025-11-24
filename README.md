@@ -648,10 +648,91 @@ Result: Stays in Beginner Runner category
 
 ### 🔄 Category Changes
 
-- You can switch tracks (Runner ↔ Freestyler) **only once**
-- If you switch, you start at the beginner level of the new track
-- Auto-promotion rules apply to your new category
-- Example: "Beginner Runner" → switch to Freestyler → becomes "Beginner Freestyler"
+Users can switch tracks (Runner ↔ Freestyler) **only once**, with safeguards to prevent gaming:
+
+#### ✅ Rules for Changing Category
+
+| Rule | Requirement | Reason |
+|------|-------------|---------|
+| **One-Time Only** | Can only change once | Prevents category hopping |
+| **Distance Limit** | Must have < 50km | Prevents switching to dominate leaderboard |
+| **Workouts Preserved** | All workouts carry over | Fair - respects effort invested |
+| **Beginner Reset** | Start at beginner level in new track | Ensures fair competition |
+
+#### 📋 Examples
+
+**✅ Allowed Change (Low Distance):**
+```
+User: Beginner Runner, 25km over 10 days
+Action: Switch to Freestyler
+Result: Becomes Beginner Freestyler with 25km
+Reason: Under 50km limit ✓
+```
+
+**✅ Allowed Change (Early Switch):**
+```
+User: Beginner Runner, 5km over 2 days
+Action: Switch to Freestyler
+Result: Becomes Beginner Freestyler with 5km
+Reason: Under 50km limit - early exploration encouraged ✓
+```
+
+**❌ Blocked Change (Too Much Distance):**
+```
+User: Beginner Runner, 75km over 20 days  
+Action: Try to switch to Freestyler
+Result: BLOCKED - "Cannot change with 75km completed"
+Reason: 75km > 50km limit (likely trying to game leaderboard) ✗
+```
+
+**❌ Blocked Change (Already Changed):**
+```
+User: Previously changed Runner → Freestyler
+Action: Try to switch back to Runner
+Result: BLOCKED - "Already changed category once"
+Reason: Only one change allowed per user ✗
+```
+
+#### 🎯 Why These Rules?
+
+1. **50km Limit**: Prevents skilled athletes with high mileage from switching to beginner category
+2. **One-Time Only**: Encourages commitment to a track
+3. **Workouts Carry Over**: Fair to users who genuinely want to try a different track
+4. **Beginner Reset**: Ensures fair competition - no "instant expert" status
+5. **Early Switch Allowed**: Users exploring early aren't penalized - encourages finding the right fit
+
+#### 💻 How to Change (Web Interface)
+
+1. Go to **My Profile** page
+2. Click **"Change Category"** button (only visible if eligible)
+3. Review rules and current progress
+4. Select new category (Runner or Freestyler)
+5. Confirm change (double confirmation required)
+6. You're now in Beginner [New Category] and can progress normally
+
+#### 🔧 How to Change (API)
+
+```bash
+# Check if eligible to change
+curl -X GET https://ciscorunning.herokuapp.com/api/profiles/me/ \
+  -H "Authorization: Token YOUR_TOKEN"
+
+# Response includes:
+# "category_changed": false  # Can change
+# "distance": 35.5           # Under 50km ✓
+
+# Make the change
+curl -X PATCH https://ciscorunning.herokuapp.com/api/profiles/me/ \
+  -H "Authorization: Token YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"category": "freestyler"}'
+
+# System will:
+# 1. Validate: distance < 50km? ✓
+# 2. Set category_changed = true
+# 3. Set category = "beginnerfreestyler"
+# 4. Keep all workouts and distance
+```
 
 ---
 

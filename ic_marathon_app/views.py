@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .models import ProfileForm, Profile, SportIntensityMapping, Workout, WorkoutForm, FSWorkoutForm
 from badgify.models import Award, Badge
 from django.shortcuts import redirect, render, get_object_or_404
+from django.contrib import messages
 from .tables import WorkoutTable, ProfileTable
 from datetime import datetime
 from django_tables2.config import RequestConfig
@@ -87,6 +88,56 @@ def my_profile(request):
         }
     """
     global DATE, DATE_END, ACTIVE
+    
+    # Handle category change POST request
+    if request.method == "POST" and "change_category" in request.POST:
+        from django.utils import timezone
+        
+        profile = request.user.profile
+        new_category = request.POST.get("new_category")
+        
+        # Check if user can change category
+        if not profile.category_changed and new_category in ["runner", "freestyler"]:
+            # Determine current category intent
+            current_is_runner = profile.category in ["beginnerrunner", "runner"]
+            new_is_runner = new_category == "runner"
+            
+            # Only allow change if switching between runner and freestyler tracks
+            if current_is_runner != new_is_runner:
+                # ANTI-GAMING MEASURE: Distance limit - only allow change before 50km
+                if profile.distance > 50.0:
+                    messages.error(
+                        request, 
+                        f"Cannot change category with {profile.distance}km completed. "
+                        f"Category changes are only allowed before reaching 50km to ensure fair competition."
+                    )
+                    return redirect("my_profile")
+                
+                # All checks passed - allow the change
+                profile.category_changed = True
+                
+                # Assign to beginner category of new track
+                if new_category == "runner":
+                    profile.category = "beginnerrunner"
+                else:  # freestyler
+                    profile.category = "beginnerfreestyler"
+                
+                profile.save()
+                messages.success(
+                    request, 
+                    f"Your category has been changed to {new_category.title()}! "
+                    f"You're now in the Beginner {new_category.title()} category and will progress as you complete workouts. "
+                    f"Remember: You can only change once!"
+                )
+            else:
+                messages.warning(request, "You are already in that category track.")
+        elif profile.category_changed:
+            messages.error(request, "You have already changed your category once. No more changes allowed.")
+        else:
+            messages.error(request, "Invalid category selection.")
+        
+        return redirect("my_profile")
+    
     # need workouts count, distance count, remaining days
     try:
         workouts = Workout.objects.filter(belongs_to=request.user.profile)
@@ -103,6 +154,11 @@ def my_profile(request):
     except ObjectDoesNotExist:
         workouts = {}
         awards = {}
+    
+    # Determine current category intent for display
+    profile = request.user.profile
+    current_category_intent = "runner" if profile.category in ["beginnerrunner", "runner"] else "freestyler"
+    
     return render(
         request,
         "ic_marathon_app/my_profile.html",
@@ -115,6 +171,8 @@ def my_profile(request):
             "aggr_distance_per": int((request.user.profile.distance / 168) * 100),
             "remaining_days_per": int(((remaining_days.days) / 26) * 100),
             "remaining_days": remaining_days.days,
+            "current_category_intent": current_category_intent,
+            "can_change_category": not profile.category_changed,
         },
     )
 
