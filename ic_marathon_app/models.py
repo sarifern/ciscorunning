@@ -98,6 +98,38 @@ class Profile(models.Model):
     def __str__(self):
         return self.cec
     
+    def get_parent_category(self):
+        """
+        Returns the parent category (runner or freestyler) for partner matching.
+        """
+        if self.category in [BEGINNERRUNNER, RUNNER]:
+            return 'runner'
+        else:  # beginnerfreestyler or freestyler
+            return 'freestyler'
+    
+    def get_eligible_partners(self):
+        """
+        Returns a queryset of profiles that can be partners.
+        Rules:
+        - Must be in same parent category (runners with runners, freestylers with freestylers)
+        - Must have completed profile (has CEC)
+        - Excludes self
+        """
+        my_parent = self.get_parent_category()
+        
+        if my_parent == 'runner':
+            eligible_categories = [BEGINNERRUNNER, RUNNER]
+        else:
+            eligible_categories = [BEGINNERFREESTYLER, FREESTYLER]
+        
+        return Profile.objects.filter(
+            category__in=eligible_categories
+        ).exclude(
+            user=self.user
+        ).exclude(
+            cec=''
+        ).order_by('cec')
+    
     def calculate_streaks(self):
         """
         Calculate current and longest workout streaks for this profile.
@@ -217,6 +249,76 @@ class Workout(models.Model):
                                   help_text="Already audited?",
                                   default=False)
     is_gift = models.BooleanField(verbose_name="Gift?", help_text="Was this a gift (extra kms)?", default=False)
+    
+    # Partner Workout Fields
+    is_partner_workout = models.BooleanField(
+        verbose_name="Partner Workout?",
+        help_text="Is this a partner workout (1.5x distance bonus)?",
+        default=False
+    )
+    partner_profile = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='partner_workouts_received',
+        help_text="The partner who trained with you"
+    )
+    partner_confirmed = models.BooleanField(
+        verbose_name="Partner Confirmed?",
+        help_text="Has the partner confirmed this workout?",
+        default=False
+    )
+    partner_workout_group = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Shared UUID linking both partner workouts together"
+    )
+    base_distance = models.DecimalField(
+        verbose_name="Base Distance (before bonus)",
+        default=0.00,
+        max_digits=5,
+        decimal_places=2,
+        help_text="Original distance before 1.5x partner bonus"
+    )
+    
+    def get_parent_category(self):
+        """
+        Returns the parent category (runner or freestyler) for this workout's profile.
+        Used for partner workout validation.
+        """
+        if self.belongs_to.category in [BEGINNERRUNNER, RUNNER]:
+            return 'runner'
+        else:  # beginnerfreestyler or freestyler
+            return 'freestyler'
+    
+    def can_partner_with(self, other_profile):
+        """
+        Validates if the current workout's profile can partner with another profile.
+        Rules:
+        - Both must be in same parent category (runners or freestylers)
+        - Other profile must exist and have a CEC (completed registration)
+        - Cannot partner with yourself
+        """
+        if not other_profile or not other_profile.cec:
+            return False, "Partner must have a complete profile with CEC"
+        
+        if self.belongs_to.user == other_profile.user:
+            return False, "Cannot partner with yourself"
+        
+        # Check parent category match
+        my_parent = self.get_parent_category()
+        
+        if other_profile.category in [BEGINNERRUNNER, RUNNER]:
+            partner_parent = 'runner'
+        else:
+            partner_parent = 'freestyler'
+        
+        if my_parent != partner_parent:
+            return False, f"Partner must be in the same category family (both runners or both freestylers)"
+        
+        return True, "Valid partner"
 
 class WorkoutForm(ModelForm):
     
@@ -229,6 +331,51 @@ class WorkoutForm(ModelForm):
 
     def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
+
+
+class PartnerWorkoutForm(ModelForm):
+    """Form for submitting partner workouts (Runner category)"""
+    partner_profile = forms.ModelChoiceField(
+        queryset=Profile.objects.none(),  # Will be set dynamically
+        required=True,
+        label="Training Partner",
+        help_text="Select who you trained with",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    class Meta:
+        model = Workout
+        fields = ['distance', 'date_time', 'photo_evidence', 'partner_profile']
+        widgets = {
+            'date_time': DateTimePickerInput(),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        # Get the current user's profile to filter eligible partners
+        user_profile = kwargs.pop('user_profile', None)
+        super().__init__(*args, **kwargs)
+        
+        if user_profile:
+            # Set queryset to only eligible partners in same parent category
+            self.fields['partner_profile'].queryset = user_profile.get_eligible_partners()
+            self.fields['partner_profile'].label_from_instance = lambda obj: f"{obj.cec} ({obj.get_category_display()})"
+    
+    def clean_date_time(self):
+        return validate_date(self.cleaned_data['date_time'])
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        partner = cleaned_data.get('partner_profile')
+        
+        if partner and hasattr(self, 'user_profile'):
+            # Validate partner compatibility
+            temp_workout = Workout(belongs_to=self.user_profile)
+            can_partner, message = temp_workout.can_partner_with(partner)
+            
+            if not can_partner:
+                raise forms.ValidationError(message)
+        
+        return cleaned_data
     
 
 
@@ -242,6 +389,52 @@ class FSWorkoutForm(ModelForm):
         }
     def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
+
+
+class FSPartnerWorkoutForm(ModelForm):
+    """Form for submitting partner workouts (Freestyler category)"""
+    partner_profile = forms.ModelChoiceField(
+        queryset=Profile.objects.none(),  # Will be set dynamically
+        required=True,
+        label="Training Partner",
+        help_text="Select who you trained with",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    class Meta:
+        model = Workout
+        fields = ['date_time', 'time', 'sport', 'intensity', 'photo_evidence', 'partner_profile']
+        widgets = {
+            'date_time': DateTimePickerInput(),
+            'time': TimePickerInput(),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        # Get the current user's profile to filter eligible partners
+        user_profile = kwargs.pop('user_profile', None)
+        super().__init__(*args, **kwargs)
+        
+        if user_profile:
+            # Set queryset to only eligible partners in same parent category
+            self.fields['partner_profile'].queryset = user_profile.get_eligible_partners()
+            self.fields['partner_profile'].label_from_instance = lambda obj: f"{obj.cec} ({obj.get_category_display()})"
+    
+    def clean_date_time(self):
+        return validate_date(self.cleaned_data['date_time'])
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        partner = cleaned_data.get('partner_profile')
+        
+        if partner and hasattr(self, 'user_profile'):
+            # Validate partner compatibility
+            temp_workout = Workout(belongs_to=self.user_profile)
+            can_partner, message = temp_workout.can_partner_with(partner)
+            
+            if not can_partner:
+                raise forms.ValidationError(message)
+        
+        return cleaned_data
 
 class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
     belongs_to = serializers.PrimaryKeyRelatedField(read_only=True)
