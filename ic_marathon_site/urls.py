@@ -53,6 +53,7 @@ urlpatterns = [
     path("add_workout_fs/", views.add_workout_fs, name="add_workout_fs"),
     path("delete_workout/<uuid>/", views.delete_workout, name="delete_workout"),
     path("leaderboard/", views.leaderboard, name="leaderboard"),
+    path("api/sport-intensity-mappings/", views.get_sport_intensity_mappings, name="sport_intensity_mappings"),
 
     path('accounts/', include('allauth.urls')),
     path('select2/', include('django_select2.urls')),

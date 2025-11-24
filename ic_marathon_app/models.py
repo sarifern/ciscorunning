@@ -45,7 +45,7 @@ class Sport(models.Model):
 
 class IntensityLevel(models.Model):
     LEVEL_CHOICES = [
-        ('Light', 'Light'),
+        ('Low', 'Low'),
         ('Moderate', 'Moderate'),
         ('High', 'High'),
     ]

@@ -1,22 +1,110 @@
 {% extends 'ic_marathon_app/base.html' %} {% block content %} {{ form.media }}
 <script>
+    // Store sport intensity mappings
+    let sportIntensityMappings = {};
+
+    // Fetch sport intensity mappings on page load
+    fetch('/api/sport-intensity-mappings/')
+        .then(response => response.json())
+        .then(data => {
+            sportIntensityMappings = data;
+        })
+        .catch(error => console.error('Error loading sport intensity mappings:', error));
+
     function openModal() {
         var modal = document.getElementById('modal-fluid');
         var overlay = document.getElementById('modal-overlay');
         modal.className = "modal show";
-
     }
 
     function closeModal() {
         var overlay = document.getElementById('modal-overlay');
         var modal = document.getElementById('modal-fluid');
         modal.className = "modal fade";
-
         window.location.href = "/";
     }
 
-   
+    function parseDuration(timeStr) {
+        // Parse time in format HH:MM:SS or H:M:S
+        if (!timeStr || timeStr.trim() === '') return 0;
+        const parts = timeStr.split(':');
+        const hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        const seconds = parseInt(parts[2]) || 0;
+        const totalMinutes = hours * 60 + minutes + seconds / 60;
+        return totalMinutes;
+    }
+
+    function calculateEstimatedKm() {
+        const sportSelect = document.querySelector('select[name="sport"]');
+        const intensitySelect = document.querySelector('select[name="intensity"]');
+        const timeInput = document.querySelector('input[name="time"]');
+        const estimateDisplay = document.getElementById('km-estimate');
+
+        if (!sportSelect || !intensitySelect || !timeInput || !estimateDisplay) return;
+
+        const sportValue = sportSelect.value;
+        const sportName = sportSelect.options[sportSelect.selectedIndex]?.text;
+        const intensityValue = intensitySelect.value;
+        const intensityName = intensitySelect.options[intensitySelect.selectedIndex]?.text;
+        const timeValue = timeInput.value;
+        const durationMinutes = parseDuration(timeValue);
+
+        // Always show the estimate display
+        estimateDisplay.style.display = 'block';
+
+        // Check for missing fields
+        const missingFields = [];
+        if (!sportValue || sportValue === '' || sportValue === '---------') missingFields.push('sport');
+        if (!intensityValue || intensityValue === '' || intensityValue === '---------') missingFields.push('intensity');
+        if (!timeValue || timeValue.trim() === '' || timeValue === '00:00:00' || durationMinutes === 0) missingFields.push('duration');
+
+        if (missingFields.length > 0) {
+            const fieldNames = missingFields.map(f => {
+                if (f === 'sport') return 'a sport';
+                if (f === 'intensity') return 'an intensity level';
+                if (f === 'duration') return 'a duration';
+            }).join(', ');
+            estimateDisplay.innerHTML = `<strong>Estimated distance:</strong> Please select ${fieldNames} to calculate`;
+            estimateDisplay.className = 'alert alert-warning qtr-padding-bottom';
+            return;
+        }
+
+        // All fields are filled, calculate the distance
+        if (sportIntensityMappings[sportName] && sportIntensityMappings[sportName][intensityName]) {
+            const kmPerHour = sportIntensityMappings[sportName][intensityName];
+            const estimatedKm = (kmPerHour * (durationMinutes / 60)).toFixed(2);
+            estimateDisplay.innerHTML = `<strong>Estimated distance:</strong> ${estimatedKm} km`;
+            estimateDisplay.className = 'alert alert-info qtr-padding-bottom';
+        } else {
+            estimateDisplay.innerHTML = `<strong>Estimated distance:</strong> Unable to calculate for selected sport and intensity`;
+            estimateDisplay.className = 'alert alert-warning qtr-padding-bottom';
+        }
+    }
+
+    // Add event listeners when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        const sportSelect = document.querySelector('select[name="sport"]');
+        const intensitySelect = document.querySelector('select[name="intensity"]');
+        const timeInput = document.querySelector('input[name="time"]');
+
+        if (sportSelect) sportSelect.addEventListener('change', calculateEstimatedKm);
+        if (intensitySelect) intensitySelect.addEventListener('change', calculateEstimatedKm);
         
+        // Add multiple event listeners for time input to catch all changes
+        if (timeInput) {
+            timeInput.addEventListener('input', calculateEstimatedKm);
+            timeInput.addEventListener('change', calculateEstimatedKm);
+            timeInput.addEventListener('blur', calculateEstimatedKm);
+            
+            // Also watch for changes using MutationObserver in case widget updates value programmatically
+            const observer = new MutationObserver(calculateEstimatedKm);
+            observer.observe(timeInput, { attributes: true, attributeFilter: ['value'] });
+        }
+        
+        // Show initial message on page load
+        setTimeout(calculateEstimatedKm, 100);
+    });
 </script>
 
 <div class="panel panel--loose panel--raised base-margin-bottom">
@@ -58,6 +146,12 @@
             <div class="form-group text-normal">
                 <div class="qtr-padding-bottom ">
                     <label>Intensity</label> {{ form.intensity }}
+                </div>
+            </div>
+
+            <div class="form-group text-normal">
+                <div id="km-estimate" class="alert alert-warning qtr-padding-bottom" style="margin-top: 10px;">
+                    <strong>Estimated distance:</strong> Please select a sport, an intensity level, a duration to calculate
                 </div>
             </div>
 

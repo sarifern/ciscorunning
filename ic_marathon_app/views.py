@@ -14,6 +14,7 @@ import decimal
 import itertools
 import os
 import pytz as tz
+from django.http import JsonResponse
 
 WTAPI = WebexTeamsAPI(access_token=os.environ.get("WT_TOKEN"))
 
@@ -554,3 +555,15 @@ def float_to_decimal(f):
         ctx.prec *= 2
         result = ctx.divide(numerator, denominator)
     return result
+
+def get_sport_intensity_mappings(request):
+    """Return all sport intensity mappings as JSON for frontend calculations"""
+    mappings = SportIntensityMapping.objects.select_related('sport', 'intensity').all()
+    data = {}
+    for mapping in mappings:
+        sport_name = mapping.sport.name
+        intensity_name = mapping.intensity.name
+        if sport_name not in data:
+            data[sport_name] = {}
+        data[sport_name][intensity_name] = float(mapping.km_per_hour)
+    return JsonResponse(data)

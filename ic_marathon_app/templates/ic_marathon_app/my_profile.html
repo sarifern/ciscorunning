@@ -4,7 +4,8 @@
 {% endblock %} {% block content %} {% load static %}
 
 <div class="row">
-  <div class="col-xl-8">
+  <!-- Left Column: Profile Info -->
+  <div class="col-xl-4 col-lg-4">
     <div class="panel panel--loose panel--raised base-margin-bottom">
       <div class="text-uppercase text-size-14">My Profile</div>
       <hr />
@@ -28,9 +29,14 @@
             >Category - {% if user.profile.category == "beginnerrunner"%}
             Beginner Runner{% elif user.profile.category == "beginnerfreestyler"%}
             Beginner Freestyler{% elif user.profile.category == "advfreestyler"%}Advanced Freestyler{% else %}
-            {{user.profile.category }} {% endif %} |
-            My Goal - {{user.profile.user_goal_km}}km
+            {{user.profile.category }} {% endif %}             
           </span>
+          
+        </div>
+        <div class="flex flex-center">
+          <span class="text-size-14 text-gray-700 text-capitalize"
+            >My Goal - {{user.profile.user_goal_km}}km</span
+          >
         </div>
 
         <br />
@@ -47,48 +53,7 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="col-xl-4">
-    <div class="panel panel--loose panel--raised base-margin-bottom">
-      <div class="text-uppercase text-size-14">My Awards</div>
-      <hr />
-      <div class="row flex-center flex-middle">
-        {% if earned_awards%} {% for award in earned_awards %}
-        <img
-          class="w3-round no-padding"
-          height="125"
-          width="125"
-          src="{{ award.badge.image.url }}"
-        />
-        {% endfor %} {% endif %}
-      </div>
-    </div>
-
-    <div class="panel panel--loose panel--raised base-margin-bottom">
-      <div class="text-uppercase text-size-14">My Statistics</div>
-      <hr />
-
-      <div>
-        <div class="subheader">Kilometers</div>
-        <div
-          class="progressbar progressbar--secondary progressbar--large"
-          data-percentage="{{aggr_distance_per}}"
-        >
-          <div class="progressbar__fill"></div>
-          <div class="progressbar__label">{{aggr_distance}}</div>
-        </div>
-
-        <div class="subheader">Workouts</div>
-        <div
-          class="progressbar progressbar--large progressbar--success"
-          data-percentage="{{workout_count}}"
-        >
-          <div class="progressbar__fill"></div>
-          <div class="progressbar__label">{{workout_count}}</div>
-        </div>
-      </div>
-    </div>
     <div class="panel panel--loose panel--raised base-margin-bottom">
       <div class="text-uppercase text-size-14">REMAINING DAYS</div>
       <hr />
@@ -116,5 +81,109 @@
     </div>
   </div>
 
-  {% endblock %}
+  <!-- Middle Column: Statistics & Streaks -->
+  <div class="col-xl-4 col-lg-4">
+    <div class="panel panel--loose panel--raised base-margin-bottom">
+      <div class="text-uppercase text-size-14">My Statistics</div>
+      <hr />
+
+      <div>
+        <div class="subheader">Kilometers</div>
+        <div
+          class="progressbar progressbar--secondary progressbar--large"
+          data-percentage="{{aggr_distance_per}}"
+        >
+          <div class="progressbar__fill"></div>
+          <div class="progressbar__label">{{aggr_distance}}</div>
+        </div>
+
+        <div class="subheader">Workouts</div>
+        <div
+          class="progressbar progressbar--large progressbar--success"
+          data-percentage="{{workout_count}}"
+        >
+          <div class="progressbar__fill"></div>
+          <div class="progressbar__label">{{workout_count}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel panel--loose panel--raised base-margin-bottom">
+      <div class="text-uppercase text-size-14">
+        <span class="icon-flame icon-size-16"></span> Workout Streaks
+      </div>
+      <hr />
+      
+      <div class="row flex-center">
+        <div class="col-xs-12 col-sm-6">
+          <div class="text-center base-margin-bottom">
+            <div class="flex flex-center flex-middle base-margin-bottom">
+              <span class="icon-flame icon-size-48 text-secondary"></span>
+            </div>
+            <div class="flex flex-center">
+              <span class="text-size-32 text-bold text-primary">{{user.profile.current_streak}}</span>
+            </div>
+            <div class="flex flex-center">
+              <span class="text-size-12 text-gray-700 text-uppercase">Current Streak</span>
+            </div>
+            <div class="flex flex-center">
+              <span class="text-size-10 text-gray-600">
+                {% if user.profile.current_streak == 0 %}
+                  Start a new streak!
+                {% elif user.profile.current_streak == 1 %}
+                  day in a row
+                {% else %}
+                  days in a row
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-6">
+          <div class="text-center">
+            <div class="flex flex-center flex-middle base-margin-bottom">
+              <span class="icon-trophy icon-size-48 text-warning"></span>
+            </div>
+            <div class="flex flex-center">
+              <span class="text-size-32 text-bold text-success">{{user.profile.longest_streak}}</span>
+            </div>
+            <div class="flex flex-center">
+              <span class="text-size-12 text-gray-700 text-uppercase">Longest Streak</span>
+            </div>
+            <div class="flex flex-center">
+              <span class="text-size-10 text-gray-600">
+                {% if user.profile.longest_streak == 0 %}
+                  Complete a workout!
+                {% elif user.profile.longest_streak == 1 %}
+                  personal best
+                {% else %}
+                  personal best
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Awards -->
+  <div class="col-xl-4 col-lg-4">
+    <div class="panel panel--loose panel--raised base-margin-bottom">
+      <div class="text-uppercase text-size-14">My Awards</div>
+      <hr />
+      <div class="row flex-center flex-middle">
+        {% if earned_awards%} {% for award in earned_awards %}
+        <img
+          class="w3-round no-padding"
+          height="125"
+          width="125"
+          src="{{ award.badge.image.url }}"
+        />
+        {% endfor %} {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
+
+{% endblock %}
