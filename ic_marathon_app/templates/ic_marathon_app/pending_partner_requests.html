@@ -38,7 +38,7 @@
                         </div>
                         <div class="row qtr-margin-bottom">
                             <div class="col-5"><strong>Distance:</strong></div>
-                            <div class="col-7">{{ workout.base_distance }} km → <span style="color: #00bceb; font-weight: bold;">{{ workout.base_distance|floatformat:2|add:"0"|floatformat:2|multiply:1.5|floatformat:2 }} km</span></div>
+                            <div class="col-7">{{ workout.base_distance }} km → <span style="color: #00bceb; font-weight: bold;">{{ workout.bonus_distance }} km</span></div>
                         </div>
                         {% if workout.sport.name != "Running" %}
                         <div class="row qtr-margin-bottom">
@@ -85,7 +85,7 @@
                         </div>
                         <div class="row qtr-margin-bottom">
                             <div class="col-5"><strong>Distance:</strong></div>
-                            <div class="col-7">{{ workout.base_distance }} km → <span style="color: #00bceb; font-weight: bold;">{{ workout.base_distance|floatformat:2|add:"0"|floatformat:2|multiply:1.5|floatformat:2 }} km</span></div>
+                            <div class="col-7">{{ workout.base_distance }} km → <span style="color: #00bceb; font-weight: bold;">{{ workout.bonus_distance }} km</span></div>
                         </div>
                         {% if workout.sport.name != "Running" %}
                         <div class="row qtr-margin-bottom">

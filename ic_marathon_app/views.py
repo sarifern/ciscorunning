@@ -557,25 +557,33 @@ def pending_partner_requests(request):
         rendered template -- List of pending partner workout requests
     """
     # Workouts initiated by current user (waiting for partner confirmation)
-    my_pending = Workout.objects.filter(
+    requests_sent = Workout.objects.filter(
         belongs_to=request.user.profile,
         is_partner_workout=True,
         partner_confirmed=False
     ).select_related('partner_profile').order_by('-uploaded_at')
     
+    # Add bonus_distance to each workout for template
+    for workout in requests_sent:
+        workout.bonus_distance = float(workout.base_distance) * 1.5
+    
     # Workouts where current user is tagged as partner (needs to confirm)
-    partner_requests = Workout.objects.filter(
+    requests_received = Workout.objects.filter(
         partner_profile=request.user.profile,
         is_partner_workout=True,
         partner_confirmed=False
     ).select_related('belongs_to').order_by('-uploaded_at')
     
+    # Add bonus_distance to each workout for template
+    for workout in requests_received:
+        workout.bonus_distance = float(workout.base_distance) * 1.5
+    
     return render(
         request,
         "ic_marathon_app/pending_partner_requests.html",
         {
-            "my_pending": my_pending,
-            "partner_requests": partner_requests,
+            "requests_sent": requests_sent,
+            "requests_received": requests_received,
             "active": ACTIVE,
         },
     )
