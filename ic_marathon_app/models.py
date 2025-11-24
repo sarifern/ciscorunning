@@ -358,7 +358,7 @@ class PartnerWorkoutForm(ModelForm):
         if user_profile:
             # Set queryset to only eligible partners in same parent category
             self.fields['partner_profile'].queryset = user_profile.get_eligible_partners()
-            self.fields['partner_profile'].label_from_instance = lambda obj: f"{obj.cec} ({obj.get_category_display()})"
+            self.fields['partner_profile'].label_from_instance = lambda obj: f"{obj.user.first_name} ({obj.cec})" if obj.user.first_name else obj.cec
     
     def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
@@ -417,7 +417,7 @@ class FSPartnerWorkoutForm(ModelForm):
         if user_profile:
             # Set queryset to only eligible partners in same parent category
             self.fields['partner_profile'].queryset = user_profile.get_eligible_partners()
-            self.fields['partner_profile'].label_from_instance = lambda obj: f"{obj.cec} ({obj.get_category_display()})"
+            self.fields['partner_profile'].label_from_instance = lambda obj: f"{obj.user.first_name} ({obj.cec})" if obj.user.first_name else obj.cec
     
     def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
