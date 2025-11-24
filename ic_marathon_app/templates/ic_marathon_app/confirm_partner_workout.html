@@ -1,0 +1,117 @@
+{% extends 'ic_marathon_app/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="panel panel--loose panel--raised base-margin-bottom">
+    <div class="text-uppercase text-size-14 no-padding">
+        🤝 Confirm Partner Workout
+    </div>
+    <hr>
+
+    <div class="alert alert-info">
+        <strong>{{ workout.belongs_to.cec }}</strong> wants to confirm a partner workout with you!
+    </div>
+
+    <div class="section no-padding">
+        <div class="panel panel--loose">
+            <h3 class="text-center">Workout Details</h3>
+            
+            <div class="row base-margin-top">
+                <div class="col-6 col-md-4">
+                    <strong>Partner:</strong>
+                </div>
+                <div class="col-6 col-md-8">
+                    {{ workout.belongs_to.cec }} ({{ workout.belongs_to.get_category_display }})
+                </div>
+            </div>
+
+            <div class="row qtr-margin-top">
+                <div class="col-6 col-md-4">
+                    <strong>Date:</strong>
+                </div>
+                <div class="col-6 col-md-8">
+                    {{ workout.date_time|date:"F d, Y - g:i A" }}
+                </div>
+            </div>
+
+            <div class="row qtr-margin-top">
+                <div class="col-6 col-md-4">
+                    <strong>Base Distance:</strong>
+                </div>
+                <div class="col-6 col-md-8">
+                    {{ workout.base_distance }} km
+                </div>
+            </div>
+
+            <div class="row qtr-margin-top">
+                <div class="col-6 col-md-4">
+                    <strong>Bonus Distance:</strong>
+                </div>
+                <div class="col-6 col-md-8">
+                    <span style="color: #00bceb; font-weight: bold;">{{ bonus_distance }} km</span>
+                    <small class="text-muted">({{ workout.base_distance }} km × 1.5)</small>
+                </div>
+            </div>
+
+            {% if workout.sport.name != "Running" %}
+            <div class="row qtr-margin-top">
+                <div class="col-6 col-md-4">
+                    <strong>Sport:</strong>
+                </div>
+                <div class="col-6 col-md-8">
+                    {{ workout.sport.name }}
+                </div>
+            </div>
+
+            <div class="row qtr-margin-top">
+                <div class="col-6 col-md-4">
+                    <strong>Intensity:</strong>
+                </div>
+                <div class="col-6 col-md-8">
+                    {{ workout.intensity.name }}
+                </div>
+            </div>
+
+            <div class="row qtr-margin-top">
+                <div class="col-6 col-md-4">
+                    <strong>Duration:</strong>
+                </div>
+                <div class="col-6 col-md-8">
+                    {{ workout.time }}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if workout.photo_evidence %}
+            <div class="row base-margin-top">
+                <div class="col-12">
+                    <strong>Photo Evidence:</strong>
+                    <div class="base-margin-top">
+                        <img src="{{ workout.photo_evidence.url }}" alt="Workout Evidence" style="max-width: 100%; height: auto; border-radius: 4px;">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="alert alert-warning base-margin-top">
+                <strong>⚠️ Important:</strong> By confirming, you acknowledge that you participated in this workout together. 
+                Both of you will receive {{ bonus_distance }} km (1.5x bonus) added to your totals.
+            </div>
+
+            <form method="POST" class="base-margin-top">
+                {% csrf_token %}
+                <div class="flex flex-center flex-wrap">
+                    <button type="submit" name="action" value="confirm" class="btn btn--success padding margin-right">
+                        ✓ Confirm Workout
+                    </button>
+                    <button type="submit" name="action" value="decline" class="btn btn--danger padding">
+                        ✗ Decline Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

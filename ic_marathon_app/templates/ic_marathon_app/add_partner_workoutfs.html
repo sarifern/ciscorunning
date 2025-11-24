@@ -1,0 +1,216 @@
+{% extends 'ic_marathon_app/base.html' %} {% block content %} {{ form.media }}
+<script>
+    // Store sport intensity mappings
+    let sportIntensityMappings = {};
+
+    // Fetch sport intensity mappings on page load
+    fetch('/api/sport-intensity-mappings/')
+        .then(response => response.json())
+        .then(data => {
+            sportIntensityMappings = data;
+        })
+        .catch(error => console.error('Error loading sport intensity mappings:', error));
+
+    function openModal() {
+        var modal = document.getElementById('modal-fluid');
+        var overlay = document.getElementById('modal-overlay');
+        modal.className = "modal show";
+    }
+
+    function closeModal() {
+        var overlay = document.getElementById('modal-overlay');
+        var modal = document.getElementById('modal-fluid');
+        modal.className = "modal fade";
+        window.location.href = "/";
+    }
+
+    function parseDuration(timeStr) {
+        if (!timeStr || timeStr.trim() === '') return 0;
+        const parts = timeStr.split(':');
+        const hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        const seconds = parseInt(parts[2]) || 0;
+        const totalMinutes = hours * 60 + minutes + seconds / 60;
+        return totalMinutes;
+    }
+
+    function calculateEstimatedKm() {
+        const sportSelect = document.querySelector('select[name="sport"]');
+        const intensitySelect = document.querySelector('select[name="intensity"]');
+        const timeInput = document.querySelector('input[name="time"]');
+        const estimateDisplay = document.getElementById('km-estimate');
+
+        if (!sportSelect || !intensitySelect || !timeInput || !estimateDisplay) return;
+
+        const sportValue = sportSelect.value;
+        const sportName = sportSelect.options[sportSelect.selectedIndex]?.text;
+        const intensityValue = intensitySelect.value;
+        const intensityName = intensitySelect.options[intensitySelect.selectedIndex]?.text;
+        const timeValue = timeInput.value;
+        const durationMinutes = parseDuration(timeValue);
+
+        estimateDisplay.style.display = 'block';
+
+        const missingFields = [];
+        if (!sportValue || sportValue === '' || sportValue === '---------') missingFields.push('sport');
+        if (!intensityValue || intensityValue === '' || intensityValue === '---------') missingFields.push('intensity');
+        if (!timeValue || timeValue.trim() === '' || timeValue === '00:00:00' || durationMinutes === 0) missingFields.push('duration');
+
+        if (missingFields.length > 0) {
+            const fieldNames = missingFields.map(f => {
+                if (f === 'sport') return 'a sport';
+                if (f === 'intensity') return 'an intensity level';
+                if (f === 'duration') return 'a duration';
+            }).join(', ');
+            estimateDisplay.innerHTML = `<strong>Estimated distance:</strong> Please select ${fieldNames} to calculate`;
+            estimateDisplay.className = 'alert alert-warning qtr-padding-bottom';
+            return;
+        }
+
+        if (sportIntensityMappings[sportName] && sportIntensityMappings[sportName][intensityName]) {
+            const kmPerHour = sportIntensityMappings[sportName][intensityName];
+            const estimatedKm = (kmPerHour * (durationMinutes / 60)).toFixed(2);
+            estimateDisplay.innerHTML = `<strong>Estimated distance:</strong> ${estimatedKm} km (will become ${(estimatedKm * 1.5).toFixed(2)} km after partner confirmation)`;
+            estimateDisplay.className = 'alert alert-info qtr-padding-bottom';
+        } else {
+            estimateDisplay.innerHTML = `<strong>Estimated distance:</strong> Unable to calculate for selected sport and intensity`;
+            estimateDisplay.className = 'alert alert-warning qtr-padding-bottom';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const sportSelect = document.querySelector('select[name="sport"]');
+        const intensitySelect = document.querySelector('select[name="intensity"]');
+        const timeInput = document.querySelector('input[name="time"]');
+
+        if (sportSelect) sportSelect.addEventListener('change', calculateEstimatedKm);
+        if (intensitySelect) intensitySelect.addEventListener('change', calculateEstimatedKm);
+        
+        if (timeInput) {
+            timeInput.addEventListener('input', calculateEstimatedKm);
+            timeInput.addEventListener('change', calculateEstimatedKm);
+            timeInput.addEventListener('blur', calculateEstimatedKm);
+        }
+
+        calculateEstimatedKm();
+    });
+</script>
+
+<div class="panel panel--loose panel--raised base-margin-bottom">
+    <div class="text-uppercase text-size-14 no-padding">
+        🤝 Add a Partner Workout (Freestyler)
+        <span class="text-size-12 text-normal" style="color: #888;">(1.5x distance bonus after confirmation)</span>
+    </div>
+    <hr>
+
+    <div class="alert alert-info">
+        <strong>How it works:</strong>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>Submit a workout with your training partner</li>
+            <li>Your partner will receive a confirmation request</li>
+            <li>Once confirmed, you both get 1.5x distance bonus!</li>
+            <li>Partner must be in the same category family (Freestyler/Beginner Freestyler)</li>
+        </ul>
+    </div>
+
+    <div class="section no-padding">
+        <form method="POST" id="partnerWorkoutForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-error">
+                <button type="button" class="close" data-dismiss="alert"><span class="icon-close"></span></button>
+                {% if form.non_field_errors %}
+                    {{ form.non_field_errors }}
+                {% endif %}
+                {% for field in form %} 
+                    {% if field.errors %}
+                    {{ field.label }}: {{ field.errors|striptags }}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom">
+                    <label>Training Partner *</label>
+                    <br> {{ form.partner_profile }}
+                    <small class="text-muted">Select who you trained with</small>
+                </div>
+            </div>
+
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom">
+                    <label>Sport *</label>
+                    <br> {{ form.sport }}
+                </div>
+            </div>
+
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom">
+                    <label>Intensity Level *</label>
+                    <br> {{ form.intensity }}
+                </div>
+            </div>
+
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom">
+                    <label>Duration *</label> 
+                    {{ form.time }}
+                    <small class="text-muted">How long did you train?</small>
+                </div>
+            </div>
+
+            <div id="km-estimate" class="alert alert-info qtr-padding-bottom" style="display: none;">
+                <strong>Estimated distance:</strong> Calculating...
+            </div>
+
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom">
+                    <label>Date of workout *</label> 
+                    {{ form.date_time }}
+                </div>
+            </div>
+
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom">
+                    <label>Photo Evidence *</label> 
+                    {{ form.photo_evidence }}
+                    <small class="text-muted">Screenshot showing both participants</small>
+                </div>
+            </div>
+
+            <div class="flex flex-center dbl-padding-top">
+                <a href="{% url 'home' %}" class="btn btn--ghost margin-right">Cancel</a>
+                <button name="save" type="submit" class="save btn btn--success padding" value="Save">
+                    Submit Partner Workout Request
+                </button>
+            </div>
+        </form>
+
+        {% if new_badges %}
+        <div class="modal modal-default show fade" id="modal-fluid">
+            <div class="modal__dialog">
+                <div class="modal__content">
+                    <a class="modal__close" onclick="closeModal()"><span class="icon-close"></span></a>
+                    <div class="modal__body">
+                        {% for new_badge in new_badges %}
+                        <div class="panel">
+                            <div class="text-center text-center-xs-down text-size-14">{{new_badge.name}}</div>
+                            <div class="flex flex-center flex-middle">
+                                <img class="w3-round no-padding" height="210px" width="210px" src="{{ new_badge.image.url }}">
+                            </div>
+                            <div class="text-center text-center-xs-down">{{new_badge.description}}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal__footer">
+                        <button class="btn btn--dark" onclick="closeModal()">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

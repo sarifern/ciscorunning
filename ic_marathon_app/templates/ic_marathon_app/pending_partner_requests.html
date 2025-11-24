@@ -1,0 +1,141 @@
+{% extends 'ic_marathon_app/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="panel panel--loose panel--raised base-margin-bottom">
+    <div class="text-uppercase text-size-14 no-padding">
+        🤝 Partner Workout Requests
+    </div>
+    <hr>
+
+    {% if not requests_received and not requests_sent %}
+    <div class="alert alert-info">
+        <p><strong>No pending partner workout requests.</strong></p>
+        <p>When someone submits a partner workout with you, it will appear here for confirmation.</p>
+    </div>
+    {% endif %}
+
+    {% if requests_received %}
+    <div class="section base-margin-bottom">
+        <h3 class="text-size-16 base-margin-bottom">
+            <span class="badge badge--primary">{{ requests_received|length }}</span>
+            Requests Awaiting Your Confirmation
+        </h3>
+        
+        <div class="row">
+            {% for workout in requests_received %}
+            <div class="col-12 col-md-6 base-margin-bottom">
+                <div class="panel panel--bordered" style="height: 100%;">
+                    <div class="panel__header" style="background-color: #f7f7f7; padding: 10px;">
+                        <strong>From: {{ workout.belongs_to.cec }}</strong>
+                        <span class="badge badge--small" style="float: right;">{{ workout.belongs_to.get_category_display }}</span>
+                    </div>
+                    <div class="panel__body">
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Date:</strong></div>
+                            <div class="col-7">{{ workout.date_time|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Distance:</strong></div>
+                            <div class="col-7">{{ workout.base_distance }} km → <span style="color: #00bceb; font-weight: bold;">{{ workout.base_distance|floatformat:2|add:"0"|floatformat:2|multiply:1.5|floatformat:2 }} km</span></div>
+                        </div>
+                        {% if workout.sport.name != "Running" %}
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Activity:</strong></div>
+                            <div class="col-7">{{ workout.sport.name }} ({{ workout.intensity.name }})</div>
+                        </div>
+                        {% endif %}
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Submitted:</strong></div>
+                            <div class="col-7">{{ workout.uploaded_at|timesince }} ago</div>
+                        </div>
+                    </div>
+                    <div class="panel__footer" style="text-align: center; padding: 10px;">
+                        <a href="{% url 'confirm_partner_workout' workout.uuid %}" class="btn btn--primary btn--small">
+                            Review & Confirm
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if requests_sent %}
+    <div class="section">
+        <h3 class="text-size-16 base-margin-bottom">
+            <span class="badge badge--warning">{{ requests_sent|length }}</span>
+            Your Pending Requests
+        </h3>
+        
+        <div class="row">
+            {% for workout in requests_sent %}
+            <div class="col-12 col-md-6 base-margin-bottom">
+                <div class="panel panel--bordered" style="height: 100%; opacity: 0.9;">
+                    <div class="panel__header" style="background-color: #fff8e1; padding: 10px;">
+                        <strong>To: {{ workout.partner_profile.cec }}</strong>
+                        <span class="badge badge--small badge--warning" style="float: right;">Awaiting Response</span>
+                    </div>
+                    <div class="panel__body">
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Date:</strong></div>
+                            <div class="col-7">{{ workout.date_time|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Distance:</strong></div>
+                            <div class="col-7">{{ workout.base_distance }} km → <span style="color: #00bceb; font-weight: bold;">{{ workout.base_distance|floatformat:2|add:"0"|floatformat:2|multiply:1.5|floatformat:2 }} km</span></div>
+                        </div>
+                        {% if workout.sport.name != "Running" %}
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Activity:</strong></div>
+                            <div class="col-7">{{ workout.sport.name }} ({{ workout.intensity.name }})</div>
+                        </div>
+                        {% endif %}
+                        <div class="row qtr-margin-bottom">
+                            <div class="col-5"><strong>Submitted:</strong></div>
+                            <div class="col-7">{{ workout.uploaded_at|timesince }} ago</div>
+                        </div>
+                    </div>
+                    <div class="panel__footer" style="text-align: center; padding: 10px; color: #888;">
+                        <small>⏳ Waiting for {{ workout.partner_profile.cec }} to confirm</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="base-margin-top text-center">
+        <a href="{% url 'home' %}" class="btn btn--ghost">Back to Home</a>
+    </div>
+</div>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 3px;
+        background-color: #00bceb;
+        color: white;
+    }
+    .badge--primary {
+        background-color: #00bceb;
+    }
+    .badge--warning {
+        background-color: #ff9800;
+    }
+    .badge--small {
+        font-size: 11px;
+        padding: 2px 6px;
+    }
+    .panel--bordered {
+        border: 1px solid #e0e0e0;
+    }
+</style>
+
+{% endblock %}
