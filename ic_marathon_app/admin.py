@@ -20,8 +20,47 @@ class SportIntensityMappingAdmin(admin.ModelAdmin):
     search_fields = ['sport__name']
     
 class WorkoutAdmin(admin.ModelAdmin):
-    list_display = ('is_audited', 'date_time', 'uploaded_at', 'belongs_to', 'distance', 'image_tag')
-    list_filter = ['is_audited', 'belongs_to', 'uploaded_at', 'date_time']
+    list_display = (
+        'is_audited', 
+        'date_time', 
+        'uploaded_at', 
+        'belongs_to', 
+        'distance', 
+        'partner_status',
+        'image_tag'
+    )
+    list_filter = [
+        'is_audited', 
+        'is_partner_workout',
+        'partner_confirmed',
+        'belongs_to', 
+        'uploaded_at', 
+        'date_time'
+    ]
+    search_fields = ['belongs_to__cec', 'partner_profile__cec']
+    
+    def partner_status(self, obj):
+        """Display partner workout status with color coding"""
+        if not obj.is_partner_workout:
+            return format_html('<span style="color: gray;">Regular</span>')
+        elif obj.partner_confirmed:
+            partner_name = obj.partner_profile.cec if obj.partner_profile else "Unknown"
+            return format_html(
+                '<span style="color: green;">✓ Partner</span><br/>'
+                '<small>with {}</small><br/>'
+                '<small>Base: {}km × 1.5 = {}km</small>',
+                partner_name,
+                obj.base_distance,
+                obj.distance
+            )
+        else:
+            partner_name = obj.partner_profile.cec if obj.partner_profile else "Unknown"
+            return format_html(
+                '<span style="color: orange;">⏳ Pending</span><br/>'
+                '<small>Waiting for {}</small>',
+                partner_name
+            )
+    partner_status.short_description = 'Partner Status'
 
     def image_tag(self, obj):
         if obj.photo_evidence:

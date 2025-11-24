@@ -16,6 +16,7 @@ import itertools
 import os
 import pytz as tz
 from django.http import JsonResponse
+import uuid
 
 WTAPI = WebexTeamsAPI(access_token=os.environ.get("WT_TOKEN"))
 
@@ -357,6 +358,252 @@ def delete_workout(request, uuid):
         request.user.profile.save()
         strip_badges(request.user)
         return redirect("home")
+
+
+# ========== PARTNER WORKOUT VIEWS ==========
+
+@login_required
+def add_partner_workout(request):
+    """View to handle partner workout submission for runners
+    
+    Arguments:
+        request {Request} -- The Request from the browser
+    
+    Returns:
+        rendered template -- Rendered template for partner workout submission
+    """
+    from .models import PartnerWorkoutForm
+    from decimal import Decimal
+    
+    if request.method == "POST":
+        form = PartnerWorkoutForm(request.POST, request.FILES, user_profile=request.user.profile)
+        form.instance.belongs_to = request.user.profile
+        
+        if form.is_valid():
+            # Save the workout with partner workout flag
+            workout = form.save(commit=False)
+            workout.is_partner_workout = True
+            workout.partner_confirmed = False
+            workout.base_distance = workout.distance  # Store base distance
+            workout.partner_workout_group = uuid.uuid4()  # Generate group ID
+            workout.save()
+            
+            messages.success(
+                request,
+                f"Partner workout submitted! Waiting for {workout.partner_profile.cec} to confirm. "
+                f"Once confirmed, you'll both receive {float(workout.base_distance) * 1.5}km!"
+            )
+            
+            return redirect("pending_partner_requests")
+        else:
+            return render(
+                request,
+                "ic_marathon_app/add_partner_workout.html",
+                {"form": form},
+            )
+    else:
+        form = PartnerWorkoutForm(user_profile=request.user.profile)
+        return render(
+            request,
+            "ic_marathon_app/add_partner_workout.html",
+            {"form": form},
+        )
+
+
+@login_required
+def add_partner_workoutfs(request):
+    """View to handle partner workout submission for freestylers
+    
+    Arguments:
+        request {Request} -- The Request from the browser
+    
+    Returns:
+        rendered template -- Rendered template for freestyler partner workout submission
+    """
+    from .models import FSPartnerWorkoutForm
+    from decimal import Decimal
+    
+    if request.method == "POST":
+        form = FSPartnerWorkoutForm(request.POST, request.FILES, user_profile=request.user.profile)
+        form.instance.belongs_to = request.user.profile
+        
+        if form.is_valid():
+            # Calculate distance from time, sport, and intensity
+            form.instance.distance = convert_to_km(
+                form.instance.sport,
+                form.instance.intensity,
+                form.instance.time.hour * 60 + form.instance.time.minute
+            )
+            
+            # Save the workout with partner workout flag
+            workout = form.save(commit=False)
+            workout.is_partner_workout = True
+            workout.partner_confirmed = False
+            workout.base_distance = workout.distance  # Store base distance
+            workout.partner_workout_group = uuid.uuid4()  # Generate group ID
+            workout.save()
+            
+            messages.success(
+                request,
+                f"Partner workout submitted! Waiting for {workout.partner_profile.cec} to confirm. "
+                f"Once confirmed, you'll both receive {float(workout.base_distance) * 1.5}km!"
+            )
+            
+            return redirect("pending_partner_requests")
+        else:
+            return render(
+                request,
+                "ic_marathon_app/add_partner_workoutfs.html",
+                {"form": form},
+            )
+    else:
+        form = FSPartnerWorkoutForm(user_profile=request.user.profile)
+        return render(
+            request,
+            "ic_marathon_app/add_partner_workoutfs.html",
+            {"form": form},
+        )
+
+
+@login_required
+def confirm_partner_workout(request, workout_uuid):
+    """View to handle partner workout confirmation
+    
+    Arguments:
+        request {Request} -- The Request from the browser
+        workout_uuid {UUID} -- UUID of the workout to confirm
+    
+    Returns:
+        rendered template -- Confirmation page or redirect after confirmation
+    """
+    from decimal import Decimal
+    
+    # Get the original workout
+    original_workout = get_object_or_404(Workout, uuid=workout_uuid)
+    
+    # Verify the current user is the tagged partner
+    if original_workout.partner_profile.user != request.user:
+        messages.error(request, "You are not authorized to confirm this workout.")
+        return redirect("home")
+    
+    # Check if already confirmed
+    if original_workout.partner_confirmed:
+        messages.info(request, "This partner workout has already been confirmed.")
+        return redirect("home")
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+        
+        if action == "confirm":
+            # Mark original as confirmed
+            original_workout.partner_confirmed = True
+            original_workout.distance = original_workout.base_distance * Decimal("1.5")
+            original_workout.save()
+            
+            # Create matching workout for partner
+            partner_workout = Workout.objects.create(
+                belongs_to=request.user.profile,
+                distance=original_workout.distance,  # Same distance with 1.5x bonus
+                base_distance=original_workout.base_distance,
+                photo_evidence=original_workout.photo_evidence,  # Share same photo
+                date_time=original_workout.date_time,
+                time=original_workout.time,
+                sport=original_workout.sport,
+                intensity=original_workout.intensity,
+                is_partner_workout=True,
+                partner_confirmed=True,
+                partner_profile=original_workout.belongs_to,  # Link back to original user
+                partner_workout_group=original_workout.partner_workout_group,  # Share same group ID
+                is_audited=False
+            )
+            
+            messages.success(
+                request,
+                f"🤝 Partner workout confirmed! You both earned {float(original_workout.distance)}km "
+                f"({float(original_workout.base_distance)}km × 1.5 bonus)"
+            )
+            
+            # Check for new badges for both users
+            check_badges(request.user)
+            check_badges(original_workout.belongs_to.user)
+            
+            return redirect("home")
+        
+        elif action == "decline":
+            # Delete the original workout
+            original_workout.delete()
+            messages.info(request, "Partner workout request declined and removed.")
+            return redirect("home")
+    
+    # GET request - show confirmation page
+    return render(
+        request,
+        "ic_marathon_app/confirm_partner_workout.html",
+        {
+            "workout": original_workout,
+            "bonus_distance": float(original_workout.base_distance) * 1.5,
+        },
+    )
+
+
+@login_required
+def pending_partner_requests(request):
+    """View to show pending partner workout requests
+    
+    Arguments:
+        request {Request} -- The Request from the browser
+    
+    Returns:
+        rendered template -- List of pending partner workout requests
+    """
+    # Workouts initiated by current user (waiting for partner confirmation)
+    my_pending = Workout.objects.filter(
+        belongs_to=request.user.profile,
+        is_partner_workout=True,
+        partner_confirmed=False
+    ).select_related('partner_profile').order_by('-uploaded_at')
+    
+    # Workouts where current user is tagged as partner (needs to confirm)
+    partner_requests = Workout.objects.filter(
+        partner_profile=request.user.profile,
+        is_partner_workout=True,
+        partner_confirmed=False
+    ).select_related('belongs_to').order_by('-uploaded_at')
+    
+    return render(
+        request,
+        "ic_marathon_app/pending_partner_requests.html",
+        {
+            "my_pending": my_pending,
+            "partner_requests": partner_requests,
+            "active": ACTIVE,
+        },
+    )
+
+
+@login_required
+def get_category_members(request):
+    """API endpoint to get eligible partners for the current user
+    
+    Arguments:
+        request {Request} -- The Request from the browser
+    
+    Returns:
+        JsonResponse -- List of eligible partners
+    """
+    eligible_partners = request.user.profile.get_eligible_partners()
+    
+    partners_data = [
+        {
+            "id": profile.id,
+            "cec": profile.cec,
+            "category": profile.get_category_display(),
+            "distance": float(profile.distance),
+        }
+        for profile in eligible_partners
+    ]
+    
+    return JsonResponse({"partners": partners_data})
 
 
 @login_required

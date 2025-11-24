@@ -896,9 +896,18 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 @receiver(post_delete, sender=Workout)
 def delete_workout(sender, instance, **kwargs):
-    # Update personal distance
+    # If this is a confirmed partner workout, also delete the partner's matching workout
+    if instance.is_partner_workout and instance.partner_confirmed and instance.partner_workout_group:
+        # Find and delete the partner's workout
+        partner_workouts = Workout.objects.filter(
+            partner_workout_group=instance.partner_workout_group
+        ).exclude(uuid=instance.uuid)
+        partner_workouts.delete()
+    
+    # Update personal distance (only if it was confirmed/counted)
     profile = instance.belongs_to
-    profile.distance -= instance.distance
+    if not (instance.is_partner_workout and not instance.partner_confirmed):
+        profile.distance -= instance.distance
 
     if profile.distance < profile.user_goal_km:
         profile.user_goal = False
@@ -931,6 +940,11 @@ def delete_workout(sender, instance, **kwargs):
 @receiver(post_save, sender=Workout)
 def save_workout(sender, instance, **kwargs):
     if instance.is_audited:
+        return
+    
+    # Skip distance updates for unconfirmed partner workouts
+    # Distance will be added when partner confirms
+    if instance.is_partner_workout and not instance.partner_confirmed:
         return
     
     # Update personal distance

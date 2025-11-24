@@ -52,6 +52,14 @@ urlpatterns = [
     path("add_workout/", views.add_workout, name="add_workout"),
     path("add_workout_fs/", views.add_workout_fs, name="add_workout_fs"),
     path("delete_workout/<uuid>/", views.delete_workout, name="delete_workout"),
+    
+    # Partner Workout Routes
+    path("add_partner_workout/", views.add_partner_workout, name="add_partner_workout"),
+    path("add_partner_workoutfs/", views.add_partner_workoutfs, name="add_partner_workoutfs"),
+    path("confirm_partner_workout/<uuid:workout_uuid>/", views.confirm_partner_workout, name="confirm_partner_workout"),
+    path("pending_partner_requests/", views.pending_partner_requests, name="pending_partner_requests"),
+    path("api/category_members/", views.get_category_members, name="get_category_members"),
+    
     path("leaderboard/", views.leaderboard, name="leaderboard"),
     path("api/sport-intensity-mappings/", views.get_sport_intensity_mappings, name="sport_intensity_mappings"),
 

@@ -42,13 +42,23 @@ class WorkoutTable(tables.Table):
     def render_date_time(self, value):
         return format_html("{}", value.astimezone(timezone('America/Mexico_City')).strftime("%Y-%m-%d"))
 
-    def render_time(self,record ):
+    def render_time(self, record):
         if record.is_gift:
             return format_html("GIFT KM")
+        elif record.is_partner_workout:
+            if record.partner_confirmed:
+                partner_name = record.partner_profile.cec if record.partner_profile else "Unknown"
+                return format_html("🤝 Partner<br/><small>with {}</small>", partner_name)
+            else:
+                return format_html("🤝 Pending<br/><small>confirmation</small>")
         else:
             return format_html("Workout")
 
-    def render_distance(self, value):
+    def render_distance(self, value, record):
+        if record.is_partner_workout and record.partner_confirmed:
+            # Show base distance and bonus
+            base = float(record.base_distance) if record.base_distance else 0
+            return format_html("{} K<br/><small>({}K × 1.5)</small>", value, base)
         return format_html("{} K", value)
 
     def render_photo_evidence(self, value):
