@@ -5,8 +5,24 @@ This document outlines how to add a 2-day expiration mechanism to partner workou
 
 ## 🎯 What Changes Are Needed
 
-### 1. **Database Changes** (OPTIONAL - `uploaded_at` already exists!)
-✅ **Good news**: The `Workout` model already has an `uploaded_at` field that tracks when workouts are created. We can use this for expiration logic without any database changes!
+### 1. **Database Changes** (OPTI2. Add a new job to run every 10 minutes or hourly:
+   ```
+   python manage.py cleanup_expired_partner_workouts --settings=ic_marathon_site.$ENVIRONMENT
+   ``` - `uploaded_at` already exists!)
+✅ **Good news**: The `Workout` model already has### Step 2: Create Management Command
+1. Create the directory structure if it doesn't exist:
+   ```bash
+   mkdir -p ic_marathon_app/management/commands
+   echo. > ic_marathon_app/management/__init__.py
+   echo. > ic_marathon_app/management/commands/__init__.py
+   ```
+
+2. Create `cleanup_expired_partner_workouts.py` file
+
+3. Test it:
+   ```bash
+   python manage.py cleanup_expired_partner_workouts --dry-run --settings=ic_marathon_site.$env:ENVIRONMENT
+   ```at` field that tracks when workouts are created. We can use this for expiration logic without any database changes!
 
 No migration needed! The existing field:
 ```python
@@ -130,10 +146,10 @@ class Command(BaseCommand):
 **How to run the command:**
 ```bash
 # Dry run (see what would be deleted)
-python manage.py cleanup_expired_partner_workouts --dry-run
+python manage.py cleanup_expired_partner_workouts --dry-run --settings=ic_marathon_site.$env:ENVIRONMENT
 
 # Actually delete expired workouts
-python manage.py cleanup_expired_partner_workouts
+python manage.py cleanup_expired_partner_workouts --settings=ic_marathon_site.$env:ENVIRONMENT
 ```
 
 ### 4. **Update Views to Filter Expired Workouts**
@@ -372,7 +388,7 @@ You have several options for running the cleanup command automatically:
 
 3. Add crontab:
    ```bash
-   python manage.py crontab add
+   python manage.py crontab add --settings=ic_marathon_site.$env:ENVIRONMENT
    ```
 
 #### **Option C: Celery Beat (For production with async tasks)**
