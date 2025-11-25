@@ -32,6 +32,17 @@
                         <span class="badge badge--small" style="float: right;">{{ workout.belongs_to.get_category_display }}</span>
                     </div>
                     <div class="panel__body">
+                        {% if workout.expiration_status %}
+                        <div class="row base-margin-bottom">
+                            <div class="col-12">
+                                {% if "hour" in workout.expiration_status or "minute" in workout.expiration_status %}
+                                <span class="badge badge--warning" style="font-size: 12px;">⏰ {{ workout.expiration_status }}</span>
+                                {% else %}
+                                <span class="badge badge--info" style="font-size: 12px;">⏰ {{ workout.expiration_status }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="row qtr-margin-bottom">
                             <div class="col-5"><strong>Date:</strong></div>
                             <div class="col-7">{{ workout.date_time|date:"M d, Y" }}</div>
@@ -79,6 +90,17 @@
                         <span class="badge badge--small badge--warning" style="float: right;">Awaiting Response</span>
                     </div>
                     <div class="panel__body">
+                        {% if workout.expiration_status %}
+                        <div class="row base-margin-bottom">
+                            <div class="col-12">
+                                {% if "hour" in workout.expiration_status or "minute" in workout.expiration_status %}
+                                <span class="badge badge--warning" style="font-size: 12px;">⏰ {{ workout.expiration_status }}</span>
+                                {% else %}
+                                <span class="badge badge--info" style="font-size: 12px;">⏰ {{ workout.expiration_status }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="row qtr-margin-bottom">
                             <div class="col-5"><strong>Date:</strong></div>
                             <div class="col-7">{{ workout.date_time|date:"M d, Y" }}</div>

@@ -40,7 +40,7 @@ class WorkoutAdmin(admin.ModelAdmin):
     search_fields = ['belongs_to__cec', 'partner_profile__cec']
     
     def partner_status(self, obj):
-        """Display partner workout status with color coding"""
+        """Display partner workout status with color coding and expiration info"""
         if not obj.is_partner_workout:
             return format_html('<span style="color: gray;">Regular</span>')
         elif obj.partner_confirmed:
@@ -53,12 +53,22 @@ class WorkoutAdmin(admin.ModelAdmin):
                 obj.base_distance,
                 obj.distance
             )
-        else:
+        elif obj.is_expired():
             partner_name = obj.partner_profile.cec if obj.partner_profile else "Unknown"
             return format_html(
-                '<span style="color: orange;">⏳ Pending</span><br/>'
-                '<small>Waiting for {}</small>',
+                '<span style="color: red;">✗ Expired</span><br/>'
+                '<small>Was waiting for {}</small>',
                 partner_name
+            )
+        else:
+            partner_name = obj.partner_profile.cec if obj.partner_profile else "Unknown"
+            expiration_status = obj.get_expiration_status()
+            return format_html(
+                '<span style="color: orange;">⏳ Pending</span><br/>'
+                '<small>Waiting for {}</small><br/>'
+                '<small style="color: #ff6b00;">{}</small>',
+                partner_name,
+                expiration_status
             )
     partner_status.short_description = 'Partner Status'
 

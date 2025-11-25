@@ -481,6 +481,12 @@ def confirm_partner_workout(request, workout_uuid):
     # Get the original workout
     original_workout = get_object_or_404(Workout, uuid=workout_uuid)
     
+    # Check if expired
+    if original_workout.is_expired():
+        messages.error(request, "This partner workout request has expired (older than 2 days).")
+        original_workout.delete()  # Clean up expired workout
+        return redirect("home")
+    
     # Verify the current user is the tagged partner
     if original_workout.partner_profile.user != request.user:
         messages.error(request, "You are not authorized to confirm this workout.")
@@ -535,13 +541,14 @@ def confirm_partner_workout(request, workout_uuid):
             messages.info(request, "Partner workout request declined and removed.")
             return redirect("home")
     
-    # GET request - show confirmation page
+    # GET request - show confirmation page with expiration info
     return render(
         request,
         "ic_marathon_app/confirm_partner_workout.html",
         {
             "workout": original_workout,
             "bonus_distance": float(original_workout.base_distance) * 1.5,
+            "expiration_status": original_workout.get_expiration_status(),
         },
     )
 
@@ -556,27 +563,39 @@ def pending_partner_requests(request):
     Returns:
         rendered template -- List of pending partner workout requests
     """
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    # Calculate expiration threshold (2 days ago)
+    expiration_threshold = timezone.now() - timedelta(days=2)
+    
     # Workouts initiated by current user (waiting for partner confirmation)
+    # Exclude expired workouts
     requests_sent = Workout.objects.filter(
         belongs_to=request.user.profile,
         is_partner_workout=True,
-        partner_confirmed=False
+        partner_confirmed=False,
+        uploaded_at__gte=expiration_threshold  # Only workouts less than 2 days old
     ).select_related('partner_profile').order_by('-uploaded_at')
     
-    # Add bonus_distance to each workout for template
+    # Add bonus_distance and expiration info to each workout for template
     for workout in requests_sent:
         workout.bonus_distance = float(workout.base_distance) * 1.5
+        workout.expiration_status = workout.get_expiration_status()
     
     # Workouts where current user is tagged as partner (needs to confirm)
+    # Exclude expired workouts
     requests_received = Workout.objects.filter(
         partner_profile=request.user.profile,
         is_partner_workout=True,
-        partner_confirmed=False
+        partner_confirmed=False,
+        uploaded_at__gte=expiration_threshold  # Only workouts less than 2 days old
     ).select_related('belongs_to').order_by('-uploaded_at')
     
-    # Add bonus_distance to each workout for template
+    # Add bonus_distance and expiration info to each workout for template
     for workout in requests_received:
         workout.bonus_distance = float(workout.base_distance) * 1.5
+        workout.expiration_status = workout.get_expiration_status()
     
     return render(
         request,

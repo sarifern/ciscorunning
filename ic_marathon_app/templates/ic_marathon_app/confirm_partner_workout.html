@@ -13,6 +13,15 @@
         <strong>{{ workout.belongs_to.cec }}</strong> wants to confirm a partner workout with you!
     </div>
 
+    {% if expiration_status %}
+    <div class="alert alert-warning" role="alert" style="display: flex; align-items: center;">
+        <i class="icon icon-warning" style="margin-right: 8px; flex-shrink: 0;"></i>
+        <div>
+            <strong>Time Sensitive:</strong> This request will expire in <strong>{{ expiration_status }}</strong>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="section no-padding">
         <div class="panel panel--loose">
             <h3 class="text-center">Workout Details</h3>
