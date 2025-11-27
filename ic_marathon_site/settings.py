@@ -120,18 +120,11 @@ WSGI_APPLICATION = "ic_marathon_site.wsgi.application"
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ.get("POSTGRES_DB"),
-        "USER": "admin",
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
-        "HOST":  os.environ.get("POSTGRES_HOST"),
-        "PORT": "",
-    }
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL"),
+        conn_max_age=500
+    )
 }
-
-db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES["default"].update(db_from_env)
 
 
 # Password validation
@@ -210,8 +203,11 @@ AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
-AWS_S3_REGION_NAME = "us-east-1"
+AWS_S3_REGION_NAME = "us-east-2"
 AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+
+# Force AWS Signature Version 4 (required for newer buckets and regions)
+AWS_S3_SIGNATURE_VERSION = "s3v4"
 
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
