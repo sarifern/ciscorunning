@@ -4,6 +4,7 @@
 
 .secrets
 *.csv
+aws-s3-policy.json
 ### Django ###
 *.log
 *.pot
