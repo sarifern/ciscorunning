@@ -1050,8 +1050,8 @@ def save_workout(sender, instance, **kwargs):
     )
     
     # Path 3: Volume Threshold
-    # Runner: Total distance ≥ 50km | Freestyler: Total distance ≥ 250km
-    volume_threshold = 50.0 if is_runner_track else 250.0
+    # Runner: Total distance ≥ 84km | Freestyler: Total distance ≥ 135km
+    volume_threshold = 84.0 if is_runner_track else 135.0
     volume_reached = profile.distance >= volume_threshold
     
     # Promote beginnerrunner to runner if ANY condition is met
