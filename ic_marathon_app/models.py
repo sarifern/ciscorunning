@@ -1032,56 +1032,57 @@ def save_workout(sender, instance, **kwargs):
     total_workouts = Workout.objects.filter(belongs_to=profile).count()
     avg_distance_per_workout = profile.distance / total_workouts if total_workouts > 0 else 0
     
+    # Determine if this is a runner or freestyler for different thresholds
+    is_runner_track = profile.category in ["beginnerrunner", "runner"]
+    
     # Auto-upgrade logic with MULTIPLE triggers to catch sandbaggers:
-    # Path 1: High total distance + consistency (genuine progression)
-    high_distance_and_consistent = (
-        profile.distance >= 84.0 and
-        profile.workout_days_count >= 10
-    )
+    # Path 1: High Single Workout Performance
+    # Runner: Single workout ≥ 10km | Freestyler: Single workout ≥ 50km
+    single_workout_threshold = 10.0 if is_runner_track else 50.0
+    high_single_workout = instance.distance >= single_workout_threshold
     
-    # Path 2: High performance level (experienced runner detected)
-    # If averaging 7km+ per workout with at least 5 workouts = clearly experienced
-    experienced_runner_detected = (
+    # Path 2: Sustained Performance Level (5+ workouts averaging high)
+    # Runner: ≥ 8km per workout | Freestyler: ≥ 40km per workout
+    avg_threshold = 8.0 if is_runner_track else 40.0
+    sustained_performance = (
         total_workouts >= 5 and
-        avg_distance_per_workout >= 7.0
+        avg_distance_per_workout >= avg_threshold
     )
     
-    # Path 3: Moderate distance but very consistent (dedicated participant)
-    # 42km over 15 days = clearly committed and should compete with others
-    moderate_but_very_consistent = (
-        profile.distance >= 42.0 and
-        profile.workout_days_count >= 15
-    )
+    # Path 3: Volume Threshold
+    # Runner: Total distance ≥ 50km | Freestyler: Total distance ≥ 250km
+    volume_threshold = 50.0 if is_runner_track else 250.0
+    volume_reached = profile.distance >= volume_threshold
     
     # Promote beginnerrunner to runner if ANY condition is met
     should_promote_runner = (
         profile.category == "beginnerrunner" and
-        (high_distance_and_consistent or experienced_runner_detected or moderate_but_very_consistent)
+        (high_single_workout or sustained_performance or volume_reached)
     )
     
     # Promote beginnerfreestyler to freestyler if ANY condition is met
     should_promote_freestyler = (
         profile.category == "beginnerfreestyler" and
-        (high_distance_and_consistent or experienced_runner_detected or moderate_but_very_consistent)
+        (high_single_workout or sustained_performance or volume_reached)
     )
     
     if should_promote_runner:
         profile.category = "runner"
         promotion_reason = (
-            f"High distance" if high_distance_and_consistent else
-            f"Experienced (avg {avg_distance_per_workout:.1f}km/workout)" if experienced_runner_detected else
-            f"Very consistent"
+            f"Path 1: High single workout ({instance.distance}km)" if high_single_workout else
+            f"Path 2: Sustained performance (avg {avg_distance_per_workout:.1f}km/workout over {total_workouts} workouts)" if sustained_performance else
+            f"Path 3: Volume threshold reached ({profile.distance}km total)"
         )
-        print(f"🎉 Auto-promoted {profile.cec} to Runner! Reason: {promotion_reason} ({profile.distance}km over {profile.workout_days_count} days)")
+        print(f"🎉 Auto-promoted {profile.cec} to Runner! Reason: {promotion_reason}")
     
     if should_promote_freestyler:
         profile.category = "freestyler"
         promotion_reason = (
-            f"High distance" if high_distance_and_consistent else
-            f"Experienced (avg {avg_distance_per_workout:.1f}km/workout)" if experienced_runner_detected else
-            f"Very consistent"
+            f"Path 1: High single workout ({instance.distance}km)" if high_single_workout else
+            f"Path 2: Sustained performance (avg {avg_distance_per_workout:.1f}km/workout over {total_workouts} workouts)" if sustained_performance else
+            f"Path 3: Volume threshold reached ({profile.distance}km total)"
         )
-        print(f"🎉 Auto-promoted {profile.cec} to Freestyler! Reason: {promotion_reason} ({profile.distance}km over {profile.workout_days_count} days)")
+        print(f"🎉 Auto-promoted {profile.cec} to Freestyler! Reason: {promotion_reason}")
     
     # Check if user reached their goal
     if profile.distance >= profile.user_goal_km:
