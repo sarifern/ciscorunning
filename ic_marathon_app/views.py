@@ -105,12 +105,12 @@ def my_profile(request):
             
             # Only allow change if switching between runner and freestyler tracks
             if current_is_runner != new_is_runner:
-                # ANTI-GAMING MEASURE: Distance limit - only allow change before 50km
-                if profile.distance > 50.0:
+                # ANTI-GAMING MEASURE: Distance limit - only allow change before 40km
+                if profile.distance > 40.0:
                     messages.error(
                         request, 
                         f"Cannot change category with {profile.distance}km completed. "
-                        f"Category changes are only allowed before reaching 50km to ensure fair competition."
+                        f"Category changes are only allowed before reaching 40km to ensure fair competition."
                     )
                     return redirect("my_profile")
                 
@@ -203,10 +203,22 @@ def my_workouts(request):
         workouts_table = WorkoutTable(workouts)
 
         awards = Award.objects.filter(user=request.user)
+        
+        # Check for pending partner workout requests (requests received, not expired)
+        from django.utils import timezone
+        from datetime import timedelta
+        expiration_threshold = timezone.now() - timedelta(days=2)
+        pending_requests_count = Workout.objects.filter(
+            partner_profile=request.user.profile,
+            is_partner_workout=True,
+            partner_confirmed=False,
+            uploaded_at__gte=expiration_threshold
+        ).count()
 
     except ObjectDoesNotExist:
         workouts = {}
         awards = {}
+        pending_requests_count = 0
     return render(
         request,
         "ic_marathon_app/my_workouts.html",
@@ -215,6 +227,7 @@ def my_workouts(request):
             "earned_awards": awards,
             "active": ACTIVE,
             "category": request.user.profile.category,
+            "pending_requests_count": pending_requests_count,
         },
     )
 
@@ -465,6 +478,25 @@ def add_partner_workoutfs(request):
         )
 
 
+def convert_partner_to_solo_workout(workout):
+    """
+    Helper function to convert a partner workout to a regular solo workout
+    
+    Arguments:
+        workout {Workout} -- The workout to convert
+    
+    Returns:
+        workout {Workout} -- The converted workout
+    """
+    workout.is_partner_workout = False
+    workout.partner_confirmed = False
+    workout.distance = workout.base_distance  # Use base distance only (no bonus)
+    workout.partner_profile = None
+    workout.partner_workout_group = None
+    workout.save()
+    return workout
+
+
 @login_required
 def confirm_partner_workout(request, workout_uuid):
     """View to handle partner workout confirmation
@@ -483,8 +515,13 @@ def confirm_partner_workout(request, workout_uuid):
     
     # Check if expired
     if original_workout.is_expired():
-        messages.error(request, "This partner workout request has expired (older than 2 days).")
-        original_workout.delete()  # Clean up expired workout
+        # Convert to regular solo workout (no bonus)
+        convert_partner_to_solo_workout(original_workout)
+        messages.warning(
+            request, 
+            f"This partner workout request has expired (older than 2 days). "
+            f"It has been converted to a solo workout with {float(original_workout.base_distance)}km (no bonus)."
+        )
         return redirect("home")
     
     # Verify the current user is the tagged partner
@@ -536,9 +573,13 @@ def confirm_partner_workout(request, workout_uuid):
             return redirect("home")
         
         elif action == "decline":
-            # Delete the original workout
-            original_workout.delete()
-            messages.info(request, "Partner workout request declined and removed.")
+            # Convert to regular solo workout (no bonus) instead of deleting
+            convert_partner_to_solo_workout(original_workout)
+            messages.info(
+                request, 
+                f"Partner workout request declined. The workout has been converted to a solo workout "
+                f"for {original_workout.belongs_to.cec} with {float(original_workout.base_distance)}km (no bonus)."
+            )
             return redirect("home")
     
     # GET request - show confirmation page with expiration info

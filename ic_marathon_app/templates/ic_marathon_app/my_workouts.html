@@ -6,13 +6,23 @@
         
         <a href="{% url 'add_workout' %}" title="Add Solo Workout"> <i class="fa fa-plus-square"></i></a>
         <a href="{% url 'add_partner_workout' %}" title="Add Partner Workout" style="margin-left: 10px; color: #00bceb;"> <i class="fa fa-users"></i></a>
-        <a href="{% url 'pending_partner_requests' %}" title="Partner Requests" style="margin-left: 10px;"> <i class="fa fa-bell"></i></a>
+        <a href="{% url 'pending_partner_requests' %}" {% if pending_requests_count > 0 %}title="You have {{ pending_requests_count }} pending partner request{{ pending_requests_count|pluralize }}!" style="margin-left: 10px; position: relative; color: #ff9900;"{% else %}title="Partner Requests" style="margin-left: 10px; position: relative;"{% endif %}>
+            <i class="fa fa-bell{% if pending_requests_count > 0 %}-o{% endif %}"></i>
+            {% if pending_requests_count > 0 %}
+            <span style="position: absolute; top: -8px; right: -8px; background: #ff0000; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">{{ pending_requests_count }}</span>
+            {% endif %}
+        </a>
         
         {% elif active == True and "freestyler" in category %}
         
         <a href="{% url 'add_workout_fs' %}" title="Add Solo Workout"> <i class="fa fa-plus-square"></i></a>
         <a href="{% url 'add_partner_workoutfs' %}" title="Add Partner Workout" style="margin-left: 10px; color: #00bceb;"> <i class="fa fa-users"></i></a>
-        <a href="{% url 'pending_partner_requests' %}" title="Partner Requests" style="margin-left: 10px;"> <i class="fa fa-bell"></i></a>
+        <a href="{% url 'pending_partner_requests' %}" {% if pending_requests_count > 0 %}title="You have {{ pending_requests_count }} pending partner request{{ pending_requests_count|pluralize }}!" style="margin-left: 10px; position: relative; color: #ff9900;"{% else %}title="Partner Requests" style="margin-left: 10px; position: relative;"{% endif %}>
+            <i class="fa fa-bell{% if pending_requests_count > 0 %}-o{% endif %}"></i>
+            {% if pending_requests_count > 0 %}
+            <span style="position: absolute; top: -8px; right: -8px; background: #ff0000; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">{{ pending_requests_count }}</span>
+            {% endif %}
+        </a>
         
         {% else %}
         <div class="alert alert--info">
