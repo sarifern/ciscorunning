@@ -40,7 +40,7 @@ The Cisco Running Challenge is a gamified fitness competition where participants
 
 ### Event Details
 
-- **Duration**: December 12, 2024 - January 6, 2025 (26 days)
+- **Duration**: December 12, 2024 - January 7, 2025 (27 days)
 - **Goal**: Complete a marathon-equivalent distance (42.195 km) or personal goal
 - **Competition**: Four separate leaderboards for fair competition
 - **Rewards**: Achievement badges for distance milestones and consecutive workout streaks
