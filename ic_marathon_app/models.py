@@ -1034,13 +1034,13 @@ def save_workout(sender, instance, **kwargs):
     
     # Auto-upgrade logic with MULTIPLE triggers to catch sandbaggers:
     # Path 1: High Single Workout Performance
-    # Runner: Single workout ≥ 10km | Freestyler: Single workout ≥ 50km
-    single_workout_threshold = 10.0 if is_runner_track else 50.0
+    # Runner: Single workout ≥ 10km | Freestyler: Single workout ≥ 20km
+    single_workout_threshold = 10.0 if is_runner_track else 20.0
     high_single_workout = instance.distance >= single_workout_threshold
     
     # Path 2: Sustained Performance Level (5+ workouts averaging high)
-    # Runner: ≥ 8km per workout | Freestyler: ≥ 40km per workout
-    avg_threshold = 8.0 if is_runner_track else 40.0
+    # Runner: ≥ 8km per workout | Freestyler: ≥ 15km per workout
+    avg_threshold = 8.0 if is_runner_track else 15.0
     sustained_performance = (
         total_workouts >= 5 and
         avg_distance_per_workout >= avg_threshold
