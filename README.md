@@ -73,7 +73,7 @@ The Cisco Running Challenge is a gamified fitness competition where participants
 ###  Partner Workouts
 
 - **Bonus Distance**: Work out with registered partner for 1.5x distance bonus
-- **Expiration**: 2-day window to confirm partner workout
+- **Expiration**: 48-hour window to confirm partner workout
 - **Dual Tracking**: Both partners receive bonus distance after confirmation
 - **Verification**: Photo evidence required
 - **Preserved Workouts**: Declined/expired workouts convert to solo workouts (no bonus)
@@ -269,7 +269,7 @@ Work out with a registered partner to earn bonus distance!
 2. **Take Photo Evidence**: Capture photo showing **both Cisconians** together during or after the workout
 3. **Submit Workout**: Enter workout details and select your partner from the dropdown
 4. **Upload Photo**: Attach the photo showing both participants
-5. **Partner Confirms**: Partner has 2 days to confirm the workout
+5. **Partner Confirms**: Partner has 48 hours to confirm the workout
 6. **Bonus Applied**: After confirmation, both receive 1.5x distance!
 
 ### Rules
@@ -277,7 +277,7 @@ Work out with a registered partner to earn bonus distance!
 - **Partner must be registered** in the system (same edition)
 - **Photo must show both participants** - this is required for verification
 - **Same category track** - both must be Advanced Runners or both Advanced Freestylers
-- **2-day confirmation window** - partner must confirm within 48 hours
+- **48-hour confirmation window** - partner must confirm within 48 hours
 - **1.5x distance bonus** - both users receive: `base_distance × 1.5`
 - **Photo sharing** - the same photo is used for both workout records
 
@@ -308,7 +308,7 @@ Invalid examples:
 - Matching workout created for partner with same bonus
 - Both users earn badges if distance thresholds are met
 
-**If Declined or Expired (>2 days):**
+**If Declined or Expired (>48 hours):**
 - Workout is automatically converted to solo workout
 - Only base distance is counted (no bonus)
 - Original workout is preserved, not deleted
@@ -342,7 +342,7 @@ python manage.py cleanup_expired_partner_workouts
 ```
 
 This command:
-- Finds all unconfirmed partner workouts older than 2 days
+- Finds all unconfirmed partner workouts older than 48 hours
 - Converts them to regular solo workouts (base distance only)
 - Removes partner links and bonus distance
 - Preserves the original workout data

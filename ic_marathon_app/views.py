@@ -207,7 +207,7 @@ def my_workouts(request):
         # Check for pending partner workout requests (requests received, not expired)
         from django.utils import timezone
         from datetime import timedelta
-        expiration_threshold = timezone.now() - timedelta(days=2)
+        expiration_threshold = timezone.now() - timedelta(hours=48)
         pending_requests_count = Workout.objects.filter(
             partner_profile=request.user.profile,
             is_partner_workout=True,
@@ -519,7 +519,7 @@ def confirm_partner_workout(request, workout_uuid):
         convert_partner_to_solo_workout(original_workout)
         messages.warning(
             request, 
-            f"This partner workout request has expired (older than 2 days). "
+            f"This partner workout request has expired (older than 48 hours). "
             f"It has been converted to a solo workout with {float(original_workout.base_distance)}km (no bonus)."
         )
         return redirect("home")
@@ -607,8 +607,8 @@ def pending_partner_requests(request):
     from django.utils import timezone
     from datetime import timedelta
     
-    # Calculate expiration threshold (2 days ago)
-    expiration_threshold = timezone.now() - timedelta(days=2)
+    # Calculate expiration threshold (48 hours ago)
+    expiration_threshold = timezone.now() - timedelta(hours=48)
     
     # Workouts initiated by current user (waiting for partner confirmation)
     # Exclude expired workouts
@@ -616,7 +616,7 @@ def pending_partner_requests(request):
         belongs_to=request.user.profile,
         is_partner_workout=True,
         partner_confirmed=False,
-        uploaded_at__gte=expiration_threshold  # Only workouts less than 2 days old
+        uploaded_at__gte=expiration_threshold  # Only workouts less than 48 hours old
     ).select_related('partner_profile').order_by('-uploaded_at')
     
     # Add bonus_distance and expiration info to each workout for template
@@ -630,7 +630,7 @@ def pending_partner_requests(request):
         partner_profile=request.user.profile,
         is_partner_workout=True,
         partner_confirmed=False,
-        uploaded_at__gte=expiration_threshold  # Only workouts less than 2 days old
+        uploaded_at__gte=expiration_threshold  # Only workouts less than 48 hours old
     ).select_related('belongs_to').order_by('-uploaded_at')
     
     # Add bonus_distance and expiration info to each workout for template

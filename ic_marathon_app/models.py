@@ -322,7 +322,7 @@ class Workout(models.Model):
     
     def is_expired(self):
         """
-        Check if unconfirmed partner workout has expired (older than 2 days)
+        Check if unconfirmed partner workout has expired (older than 48 hours)
         """
         from django.utils import timezone
         from datetime import timedelta
@@ -330,7 +330,7 @@ class Workout(models.Model):
         if not self.is_partner_workout or self.partner_confirmed:
             return False
         
-        expiration_date = self.uploaded_at + timedelta(days=2)
+        expiration_date = self.uploaded_at + timedelta(hours=48)
         return timezone.now() > expiration_date
     
     def time_until_expiration(self):
@@ -344,7 +344,7 @@ class Workout(models.Model):
         if not self.is_partner_workout or self.partner_confirmed:
             return None
         
-        expiration_date = self.uploaded_at + timedelta(days=2)
+        expiration_date = self.uploaded_at + timedelta(hours=48)
         remaining = expiration_date - timezone.now()
         
         if remaining.total_seconds() <= 0:
@@ -354,7 +354,7 @@ class Workout(models.Model):
     
     def get_expiration_status(self):
         """
-        Returns human-readable expiration status
+        Returns human-readable expiration status in hours
         """
         if not self.is_partner_workout or self.partner_confirmed:
             return None
@@ -365,15 +365,12 @@ class Workout(models.Model):
             return "Expired"
         
         hours = int(remaining.total_seconds() // 3600)
+        minutes = int((remaining.total_seconds() % 3600) // 60)
         
         if hours < 1:
-            minutes = int(remaining.total_seconds() // 60)
-            return f"{minutes} minutes remaining"
-        elif hours < 24:
-            return f"{hours} hours remaining"
+            return f"{minutes} minute{'s' if minutes != 1 else ''} remaining"
         else:
-            days = hours // 24
-            return f"{days} day{'s' if days != 1 else ''} remaining"
+            return f"{hours} hour{'s' if hours != 1 else ''} remaining"
 
 class WorkoutForm(ModelForm):
     

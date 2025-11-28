@@ -8,8 +8,8 @@ class Command(BaseCommand):
     help = 'Converts expired unconfirmed partner workouts to solo workouts'
 
     def handle(self, *args, **options):
-        # Find all unconfirmed partner workouts older than 2 days
-        expiration_threshold = timezone.now() - timedelta(days=2)
+        # Find all unconfirmed partner workouts older than 48 hours
+        expiration_threshold = timezone.now() - timedelta(hours=48)
         
         expired_workouts = Workout.objects.filter(
             is_partner_workout=True,
