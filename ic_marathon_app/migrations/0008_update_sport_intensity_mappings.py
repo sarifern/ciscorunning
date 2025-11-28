@@ -33,7 +33,7 @@ def update_sport_intensity_mappings(apps, schema_editor):
         "High": 2,
     }
     
-    # km/hr mapping from prorrateo.csv (converted from km/30min to km/hr)
+    # km/hr mapping from prorrateo.csv
     # Format: [Low (70%), Moderate (85%), High (100%)]
     km_data = {
         "Running":        [7.0, 8.5, 10.0],
@@ -41,22 +41,22 @@ def update_sport_intensity_mappings(apps, schema_editor):
         "Swimming":       [7.0, 8.5, 10.0],
         "Crossfit":       [7.0, 8.5, 10.0],
         "Calisthenics":   [7.0, 8.5, 10.0],
-        "Weightlifting":  [5.6, 6.8, 8.0],
-        "Boxing":         [5.6, 6.8, 8.0],
-        "Soccer":         [5.6, 6.8, 8.0],
-        "Basketball":     [5.6, 6.8, 8.0],
-        "Volleyball":     [5.6, 6.8, 8.0],
-        "Tennis":         [5.6, 6.8, 8.0],
-        "Yoga":           [4.2, 5.1, 6.0],
-        "Pilates":        [4.2, 5.1, 6.0],
-        "Zumba":          [4.2, 5.1, 6.0],
-        "Dancing":        [4.2, 5.1, 6.0],
-        "Hiking":         [4.2, 5.1, 6.0],
-        "Elliptical":     [4.2, 5.1, 6.0],
-        "Bowling":        [4.2, 5.1, 6.0],
-        "Pole dancing":   [4.2, 5.1, 6.0],
-        "Rowing":         [4.2, 5.1, 6.0],
-        "Other":          [4.2, 5.1, 6.0],
+        "Weightlifting":  [6.3, 7.65, 9.0],
+        "Boxing":         [6.3, 7.65, 9.0],
+        "Soccer":         [6.3, 7.65, 9.0],
+        "Basketball":     [6.3, 7.65, 9.0],
+        "Volleyball":     [6.3, 7.65, 9.0],
+        "Tennis":         [6.3, 7.65, 9.0],
+        "Yoga":           [5.6, 6.8, 8.0],
+        "Pilates":        [5.6, 6.8, 8.0],
+        "Zumba":          [5.6, 6.8, 8.0],
+        "Dancing":        [5.6, 6.8, 8.0],
+        "Hiking":         [5.6, 6.8, 8.0],
+        "Elliptical":     [5.6, 6.8, 8.0],
+        "Bowling":        [5.6, 6.8, 8.0],
+        "Pole dancing":   [5.6, 6.8, 8.0],
+        "Rowing":         [5.6, 6.8, 8.0],
+        "Other":          [5.6, 6.8, 8.0],
     }
 
     # Update or create sports and their intensity mappings
