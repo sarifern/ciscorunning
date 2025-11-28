@@ -246,7 +246,7 @@
             <p class="base-margin-bottom">
               <strong>Current Category:</strong> 
               <span class="text-capitalize">
-                {% if current_category_intent == "runner" %}Runner{% else %}Freestyler{% endif %}
+                {% if current_category_intent == "runner" %}Advanced Runner{% else %}Advanced Freestyler{% endif %}
               </span>
             </p>
             
@@ -258,7 +258,7 @@
                   {% if current_category_intent == "runner" %}disabled{% endif %}>
                 <span class="radio__input"></span>
                 <span class="radio__label">
-                  <strong>Runner</strong> - Track running activities
+                  <strong>Advanced Runner</strong> - Track running activities
                   {% if current_category_intent == "runner" %}
                     <span class="text-gray-600">(Current)</span>
                   {% endif %}
@@ -272,7 +272,7 @@
                   {% if current_category_intent == "freestyler" %}disabled{% endif %}>
                 <span class="radio__input"></span>
                 <span class="radio__label">
-                  <strong>Freestyler</strong> - Track any sport/activity
+                  <strong>Advanced Freestyler</strong> - Track any sport/activity
                   {% if current_category_intent == "freestyler" %}
                     <span class="text-gray-600">(Current)</span>
                   {% endif %}

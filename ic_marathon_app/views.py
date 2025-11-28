@@ -709,9 +709,9 @@ def leaderboard(request):
     RequestConfig(request, paginate={"per_page": 10}).configure(table_leaders_f)
 
     list_tables = [(table_leaders_br,len(leaders_br),"Beginner Runners"),
-                   (table_leaders_r,len(leaders_r),"Runners"),
+                   (table_leaders_r,len(leaders_r),"Advanced Runners"),
                    (table_leaders_bf,len(leaders_bf),"Beginner Freestylers"),
-                   (table_leaders_f,len(leaders_f),"Freestylers")]
+                   (table_leaders_f,len(leaders_f),"Advanced Freestylers")]
 
     match request.user.profile.category:
         case "beginnerrunner":

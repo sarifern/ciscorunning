@@ -35,8 +35,8 @@ A Django-based web application for tracking and gamifying fitness activities dur
 
 The Cisco Running Challenge is a gamified fitness competition where participants compete in two main tracks:
 
-- **Runner Track**: Traditional running activities
-- **Freestyler Track**: Various sports (cycling, swimming, hiking, etc.) converted to km equivalents
+- **Advanced Runner Track**: Traditional running activities
+- **Advanced Freestyler Track**: Various sports (cycling, swimming, hiking, etc.) converted to km equivalents
 
 ### Event Details
 
@@ -53,7 +53,7 @@ The Cisco Running Challenge is a gamified fitness competition where participants
 
 - **Auto-Assignment**: New users automatically assigned to "Beginner" categories
 - **Anti-Sandbagging**: System detects skilled athletes and promotes them automatically
-- **Four Categories**: Beginner Runner, Runner, Beginner Freestyler, Freestyler
+- **Four Categories**: Beginner Runner, Advanced Runner, Beginner Freestyler, Advanced Freestyler
 - **Fair Competition**: Separate leaderboards prevent experienced athletes from dominating beginner categories
 
 ###  Achievement Badges
@@ -190,9 +190,9 @@ The application automatically manages user categories to ensure fair competition
 ### Categories
 
 1. **Beginner Runner**: New runners, auto-assigned on signup
-2. **Runner**: Experienced runners who demonstrate performance
+2. **Advanced Runner**: Experienced runners who demonstrate performance
 3. **Beginner Freestyler**: New freestylers, auto-assigned on signup
-4. **Freestyler**: Experienced multi-sport athletes
+4. **Advanced Freestyler**: Experienced multi-sport athletes
 
 ### Auto-Promotion Rules
 
@@ -200,32 +200,32 @@ Users are **automatically promoted** from Beginner to regular category when they
 
 #### Path 1: High Single Workout Performance
 
-- **Runner**: Single workout  10km at any intensity
-- **Freestyler**: Single workout  50km equivalent at any intensity
+- **Advanced Runner**: Single workout  10km at any intensity
+- **Advanced Freestyler**: Single workout  50km equivalent at any intensity
 
 #### Path 2: Sustained Performance Level 
 
 - **5 or more workouts** averaging:
-  - **Runner**:  8km per workout (regardless of intensity)
-  - **Freestyler**:  40km per workout (regardless of intensity)
+  - **Advanced Runner**:  8km per workout (regardless of intensity)
+  - **Advanced Freestyler**:  40km per workout (regardless of intensity)
 
 #### Path 3: Volume Threshold
 
-- **Runner**: Total distance  84km across any number of workouts
-- **Freestyler**: Total distance  135km across any number of workouts
+- **Advanced Runner**: Total distance  84km across any number of workouts
+- **Advanced Freestyler**: Total distance  135km across any number of workouts
 
 ### Category Examples
 
 **Quick Promotion (Path 1):**
 ```
-Day 1: 12km run  AUTO-PROMOTED to Runner immediately
+Day 1: 12km run  AUTO-PROMOTED to Advanced Runner immediately
 ```
 
 **Consistent Performance (Path 2):**
 ```
 Day 1: 10km  Day 2: 9km  Day 3: 11km  Day 4: 8km  Day 5: 12km
 Total: 50km over 5 days, avg 10km/workout
-Result: AUTO-PROMOTED to Runner (Path 2 triggered)
+Result: AUTO-PROMOTED to Advanced Runner (Path 2 triggered)
 ```
 
 **Volume Builder (Path 3):**
@@ -234,14 +234,14 @@ Week 1: 5km x 7 days = 35km
 Week 2: 5km x 7 days = 35km  
 Week 3: 5km x 3 days = 15km
 Total: 85km over 17 days
-Result: AUTO-PROMOTED to Runner (Path 3 triggered - exceeded 84km threshold)
+Result: AUTO-PROMOTED to Advanced Runner (Path 3 triggered - exceeded 84km threshold)
 ```
 
 ### One-Time Category Switch
 
-Users can **manually switch** between Runner and Freestyler categories **once only**:
+Users can **manually switch** between Advanced Runner and Advanced Freestyler categories **once only**:
 
-- Switch from Runner to Freestyler (or vice versa)
+- Switch from Advanced Runner to Advanced Freestyler (or vice versa)
 - Available in profile settings
 - **Must be done before reaching 40km** total distance
 - Cannot switch back after changing
@@ -276,7 +276,7 @@ Work out with a registered partner to earn bonus distance!
 
 - **Partner must be registered** in the system (same edition)
 - **Photo must show both participants** - this is required for verification
-- **Same category track** - both must be Runners or both Freestylers
+- **Same category track** - both must be Advanced Runners or both Advanced Freestylers
 - **2-day confirmation window** - partner must confirm within 48 hours
 - **1.5x distance bonus** - both users receive: `base_distance × 1.5`
 - **Photo sharing** - the same photo is used for both workout records
