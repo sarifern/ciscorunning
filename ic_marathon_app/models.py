@@ -438,7 +438,10 @@ class FSWorkoutForm(ModelForm):
         fields = ['date_time','time','sport', 'intensity', 'photo_evidence']
         widgets = {
             'date_time': DateTimePickerInput(),
-            'time': TimePickerInput(),
+            'time': TimePickerInput(options={
+                "format": "HH:mm",
+                "stepping": 1,
+            }),
         }
     def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
@@ -459,7 +462,10 @@ class FSPartnerWorkoutForm(ModelForm):
         fields = ['date_time', 'time', 'sport', 'intensity', 'photo_evidence', 'partner_profile']
         widgets = {
             'date_time': DateTimePickerInput(),
-            'time': TimePickerInput(),
+            'time': TimePickerInput(options={
+                "format": "HH:mm",
+                "stepping": 1,
+            }),
         }
     
     def __init__(self, *args, **kwargs):

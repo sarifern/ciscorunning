@@ -25,12 +25,12 @@
     }
 
     function parseDuration(timeStr) {
+        // Parse time in format HH:MM
         if (!timeStr || timeStr.trim() === '') return 0;
         const parts = timeStr.split(':');
         const hours = parseInt(parts[0]) || 0;
         const minutes = parseInt(parts[1]) || 0;
-        const seconds = parseInt(parts[2]) || 0;
-        const totalMinutes = hours * 60 + minutes + seconds / 60;
+        const totalMinutes = hours * 60 + minutes;
         return totalMinutes;
     }
 
@@ -54,7 +54,7 @@
         const missingFields = [];
         if (!sportValue || sportValue === '' || sportValue === '---------') missingFields.push('sport');
         if (!intensityValue || intensityValue === '' || intensityValue === '---------') missingFields.push('intensity');
-        if (!timeValue || timeValue.trim() === '' || timeValue === '00:00:00' || durationMinutes === 0) missingFields.push('duration');
+        if (!timeValue || timeValue.trim() === '' || timeValue === '00:00' || durationMinutes === 0) missingFields.push('duration');
 
         if (missingFields.length > 0) {
             const fieldNames = missingFields.map(f => {
@@ -168,7 +168,7 @@
 
             <div class="form-group text-normal">
                 <div class="qtr-padding-bottom">
-                    <label>Duration *</label> 
+                    <label>Duration (hrs:min) *</label> 
                     {{ form.time }}
                     <small class="text-muted">How long did you train?</small>
                 </div>
