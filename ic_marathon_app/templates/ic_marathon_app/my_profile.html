@@ -27,11 +27,26 @@
         <div class="flex flex-center">
           <span class="text-size-14 text-gray-700 text-capitalize"
             >Category - {% if user.profile.category == "beginnerrunner"%}
-            Beginner Runner{% elif user.profile.category == "beginnerfreestyler"%}
-            Beginner Freestyler{% elif user.profile.category == "advfreestyler"%}Advanced Freestyler{% else %}
+            Beginner Runner{% elif user.profile.category == "runner"%}
+            Advanced Runner{% elif user.profile.category == "beginnerfreestyler"%}
+            Beginner Freestyler{% elif user.profile.category == "freestyler"%}
+            Advanced Freestyler{% else %}
             {{user.profile.category }} {% endif %}             
           </span>
         </div>
+        
+        <!-- Auto-Promotion Message -->
+        {% if user.profile.promotion_reason %}
+        <div class="flex flex-center base-margin-top">
+          <div class="alert alert-success" style="max-width: 90%; text-align: center;">
+            <strong>🎉 Congratulations!</strong><br>
+            <span class="text-size-12">
+              You've been auto-promoted to Advanced {% if user.profile.category == "runner" %}Runner{% else %}Freestyler{% endif %}!<br>
+              <em>{{ user.profile.promotion_reason }}</em>
+            </span>
+          </div>
+        </div>
+        {% endif %}
         
         <!-- Category Change Section -->
         {% if can_change_category %}
