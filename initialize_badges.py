@@ -14,9 +14,9 @@ badges_config = [
     ("42K", "42K Milestone Achieved", "You reached your goal! Give an extra mile!", "42k.jpg"),
     ("21K", "21K Award Unlocked", "Wow! You set a new half marathon personal record", "21k.jpg"),
     ("10K", "10K Record Smashed", "Congrats! You set a new 10k personal record", "10k.jpg"),
-    ("7day-streak", "Week Warrior", "Amazing! You completed 7 consecutive days of workouts!", "trophy.svg"),
-    ("14day-streak", "Fortnight Champion", "Incredible! You completed 14 consecutive days of workouts!", "reward.svg"),
-    ("21day-streak", "Three Week Legend", "Outstanding! You completed 21 consecutive days of workouts!", "runner.svg"),
+    ("7day-streak", "Week Warrior", "Amazing! You completed 7 consecutive days of workouts!", "7DayStreak.svg"),
+    ("14day-streak", "Fortnight Champion", "Incredible! You completed 14 consecutive days of workouts!", "14DayStreak.svg"),
+    ("21day-streak", "Three Week Legend", "Outstanding! You completed 21 consecutive days of workouts!", "21DayStreak.svg"),
 ]
 
 # Get the path to the static img directory
