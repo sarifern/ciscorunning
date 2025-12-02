@@ -190,8 +190,8 @@ class ProfileForm(ModelForm):
     # Only show Advanced Runner and Advanced Freestyler in the wizard (not beginner categories)
     # Users will be auto-assigned to beginner categories and promoted after 42km
     WIZARD_CATEGORY_CHOICES = (
-        (RUNNER, 'Advanced Runner'),
-        (FREESTYLER, 'Advanced Freestyler'),
+        (RUNNER, 'Runner'),
+        (FREESTYLER, 'Freestyler'),
     )
     
     category = forms.ChoiceField(
@@ -631,8 +631,8 @@ class ProfileSerializer(serializers.HyperlinkedModelSerializer):
     # Only allow selection of Runner or Freestyler via API
     # Backend will auto-assign to beginner categories
     WIZARD_CATEGORY_CHOICES = (
-        (RUNNER, 'Advanced Runner'),
-        (FREESTYLER, 'Advanced Freestyler'),
+        (RUNNER, 'Runner'),
+        (FREESTYLER, 'Freestyler'),
     )
     
     category = serializers.ChoiceField(choices=WIZARD_CATEGORY_CHOICES)
