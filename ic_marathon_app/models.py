@@ -1002,7 +1002,8 @@ def delete_workout(sender, instance, **kwargs):
 def save_workout(sender, instance, **kwargs):
     if instance.is_audited:
         return
-    
+    if instance.is_gift:
+        return
     # Skip distance updates for unconfirmed partner workouts
     # Distance will be added when partner confirms
     if instance.is_partner_workout and not instance.partner_confirmed:
