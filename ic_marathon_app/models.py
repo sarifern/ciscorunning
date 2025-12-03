@@ -1073,9 +1073,9 @@ def save_workout(sender, instance, **kwargs):
     if should_promote_runner:
         profile.category = "runner"
         promotion_reason = (
-            f"Path 1: High single workout ({instance.distance}km)" if high_single_workout else
-            f"Path 2: Sustained performance (avg {avg_distance_per_workout:.1f}km/workout over {total_workouts} workouts)" if sustained_performance else
-            f"Path 3: Volume threshold reached ({profile.distance}km total)"
+            f"Path 1: High single workout ({instance.distance:.2f}km)" if high_single_workout else
+            f"Path 2: Sustained performance (avg {avg_distance_per_workout:.2f}km/workout over {total_workouts} workouts)" if sustained_performance else
+            f"Path 3: Volume threshold reached ({profile.distance:.2f}km total)"
         )
         profile.promotion_reason = promotion_reason
         print(f"🎉 Auto-promoted {profile.cec} to Runner! Reason: {promotion_reason}")
@@ -1083,9 +1083,9 @@ def save_workout(sender, instance, **kwargs):
     if should_promote_freestyler:
         profile.category = "freestyler"
         promotion_reason = (
-            f"Path 1: High single workout ({instance.distance}km)" if high_single_workout else
-            f"Path 2: Sustained performance (avg {avg_distance_per_workout:.1f}km/workout over {total_workouts} workouts)" if sustained_performance else
-            f"Path 3: Volume threshold reached ({profile.distance}km total)"
+            f"Path 1: High single workout ({instance.distance:.2f}km)" if high_single_workout else
+            f"Path 2: Sustained performance (avg {avg_distance_per_workout:.2f}km/workout over {total_workouts} workouts)" if sustained_performance else
+            f"Path 3: Volume threshold reached ({profile.distance:.2f}km total)"
         )
         profile.promotion_reason = promotion_reason
         print(f"🎉 Auto-promoted {profile.cec} to Freestyler! Reason: {promotion_reason}")

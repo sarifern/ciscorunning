@@ -2,7 +2,12 @@
 
 <div class="panel panel--loose panel--raised base-margin-bottom">
     <div class="text-uppercase text-size-14">My Workouts 
-        {% if active == True and "runner" in category %}
+        {% if active == False %}
+        <div class="alert alert--info">
+            <div class="alert__icon icon-info-outline"></div>
+            <div class="alert__message">The challenge is not active! Stay tuned (Dec 11th)!</div>
+        </div>
+        {% elif active == True and "runner" in category %}
         
         <a href="{% url 'add_workout' %}" title="Add Solo Workout"> <i class="fa fa-plus-square"></i></a>
         <a href="{% url 'add_partner_workout' %}" title="Add Partner Workout" style="margin-left: 10px; color: #00bceb;"> <i class="fa fa-users"></i></a>
@@ -23,12 +28,6 @@
             <span style="position: absolute; top: -8px; right: -8px; background: #ff0000; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">{{ pending_requests_count }}</span>
             {% endif %}
         </a>
-        
-        {% else %}
-        <div class="alert alert--info">
-            <div class="alert__icon icon-info-outline"></div>
-            <div class="alert__message">The challenge is not active! Stay tuned (Dec 11th)!</div>
-        </div>
         {% endif %}
     </div>
     <hr>
