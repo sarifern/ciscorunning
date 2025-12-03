@@ -1011,6 +1011,8 @@ def save_workout(sender, instance, **kwargs):
     # Update personal distance
     profile = instance.belongs_to
     profile.distance += Decimal(instance.distance)
+
+    profile.save()
     if instance.is_gift:
         return
     # Track first workout date
