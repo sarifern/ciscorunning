@@ -123,6 +123,9 @@ def my_profile(request):
                 else:  # freestyler
                     profile.category = "beginnerfreestyler"
                 
+                # Clear auto-promotion reason since user is now in beginner tier
+                profile.promotion_reason = None
+                
                 profile.save()
                 messages.success(
                     request, 

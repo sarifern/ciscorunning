@@ -724,6 +724,8 @@ class ProfileSerializer(serializers.HyperlinkedModelSerializer):
                     validated_data['category'] = BEGINNERRUNNER
                 else:
                     validated_data['category'] = BEGINNERFREESTYLER
+                # Clear auto-promotion reason since user is now in beginner tier
+                validated_data['promotion_reason'] = None
             # If staying in same track, don't modify the actual category
             else:
                 # Remove category from update to keep current progression
