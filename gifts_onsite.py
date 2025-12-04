@@ -41,13 +41,13 @@ for cec in cecs_who_joined_onsite:
         print(f"profile for user {cec} does not exist")
         pass
 
-markdown = f"Hey, thanks for attending the special event. \nFive extra kms have been granted to the following users: "
+markdown = f"Hey, thanks for attending the special event onsite. \nTen extra kms have been granted to the following users: "
 WTAPI.messages.create(
     roomId=os.environ.get("WT_ROOMID"),
     markdown=markdown,
 )
 
-batches = list(divide_into_batches(cecs_who_joined, 15))
+batches = list(divide_into_batches(cecs_who_joined_onsite, 15))
 for batch in batches:
     markdown = ""
     for cec in batch:
