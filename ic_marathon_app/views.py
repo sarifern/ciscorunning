@@ -586,10 +586,10 @@ def confirm_partner_workout(request, workout_uuid):
             return redirect("home")
     
     # GET request - show confirmation page with expiration info
-    # Convert time field to minutes for freestyle workouts
-    duration_minutes = None
+    # Format duration as HH:MM for freestyle workouts
+    duration_display = None
     if original_workout.time:
-        duration_minutes = original_workout.time.hour * 60 + original_workout.time.minute
+        duration_display = f"{original_workout.time.hour:02d}:{original_workout.time.minute:02d}"
     
     return render(
         request,
@@ -598,7 +598,7 @@ def confirm_partner_workout(request, workout_uuid):
             "workout": original_workout,
             "bonus_distance": float(original_workout.base_distance) * 1.5,
             "expiration_status": original_workout.get_expiration_status(),
-            "duration_minutes": duration_minutes,
+            "duration_display": duration_display,
         },
     )
 
@@ -632,9 +632,9 @@ def pending_partner_requests(request):
     for workout in requests_sent:
         workout.bonus_distance = float(workout.base_distance) * 1.5
         workout.expiration_status = workout.get_expiration_status()
-        # Convert time field to minutes for freestyle workouts
+        # Format duration as HH:MM for freestyle workouts
         if workout.time:
-            workout.duration_minutes = workout.time.hour * 60 + workout.time.minute
+            workout.duration_display = f"{workout.time.hour:02d}:{workout.time.minute:02d}"
     
     # Workouts where current user is tagged as partner (needs to confirm)
     # Exclude expired workouts
@@ -649,9 +649,9 @@ def pending_partner_requests(request):
     for workout in requests_received:
         workout.bonus_distance = float(workout.base_distance) * 1.5
         workout.expiration_status = workout.get_expiration_status()
-        # Convert time field to minutes for freestyle workouts
+        # Format duration as HH:MM for freestyle workouts
         if workout.time:
-            workout.duration_minutes = workout.time.hour * 60 + workout.time.minute
+            workout.duration_display = f"{workout.time.hour:02d}:{workout.time.minute:02d}"
     
     return render(
         request,
