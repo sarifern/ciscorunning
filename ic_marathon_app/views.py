@@ -23,7 +23,7 @@ WTAPI = WebexTeamsAPI(access_token=os.environ.get("WT_TOKEN"))
 DATE_START = datetime(2025, 12, 12, 1, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
-DATE_END = datetime(2026, 1, 7, 0, 0, 0).replace(
+DATE_END = datetime(2026, 1, 8, 0, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
 
@@ -586,6 +586,11 @@ def confirm_partner_workout(request, workout_uuid):
             return redirect("home")
     
     # GET request - show confirmation page with expiration info
+    # Convert time field to minutes for freestyle workouts
+    duration_minutes = None
+    if original_workout.time:
+        duration_minutes = original_workout.time.hour * 60 + original_workout.time.minute
+    
     return render(
         request,
         "ic_marathon_app/confirm_partner_workout.html",
@@ -593,6 +598,7 @@ def confirm_partner_workout(request, workout_uuid):
             "workout": original_workout,
             "bonus_distance": float(original_workout.base_distance) * 1.5,
             "expiration_status": original_workout.get_expiration_status(),
+            "duration_minutes": duration_minutes,
         },
     )
 
@@ -626,6 +632,9 @@ def pending_partner_requests(request):
     for workout in requests_sent:
         workout.bonus_distance = float(workout.base_distance) * 1.5
         workout.expiration_status = workout.get_expiration_status()
+        # Convert time field to minutes for freestyle workouts
+        if workout.time:
+            workout.duration_minutes = workout.time.hour * 60 + workout.time.minute
     
     # Workouts where current user is tagged as partner (needs to confirm)
     # Exclude expired workouts
@@ -640,6 +649,9 @@ def pending_partner_requests(request):
     for workout in requests_received:
         workout.bonus_distance = float(workout.base_distance) * 1.5
         workout.expiration_status = workout.get_expiration_status()
+        # Convert time field to minutes for freestyle workouts
+        if workout.time:
+            workout.duration_minutes = workout.time.hour * 60 + workout.time.minute
     
     return render(
         request,

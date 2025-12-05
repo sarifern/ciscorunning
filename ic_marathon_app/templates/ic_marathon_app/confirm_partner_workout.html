@@ -78,7 +78,11 @@
                     <strong>Duration:</strong>
                 </div>
                 <div class="col-6 col-md-8">
-                    {{ workout.time }}
+                    {% if duration_minutes %}
+                        {{ duration_minutes }} min
+                    {% else %}
+                        {{ workout.time }}
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
