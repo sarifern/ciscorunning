@@ -1,5 +1,31 @@
 {% extends 'ic_marathon_app/base.html' %} {% block content %} {{ form.media }}
 <script>
+    // Prevent double submission
+    let isSubmitting = false;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('partnerWorkoutForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Mark as submitting
+                isSubmitting = true;
+                
+                // Disable submit button and show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Saving...';
+                    submitBtn.classList.add('btn--disabled');
+                }
+            });
+        }
+    });
+    
     function openModal() {
         var modal = document.getElementById('modal-fluid');
         var overlay = document.getElementById('modal-overlay');

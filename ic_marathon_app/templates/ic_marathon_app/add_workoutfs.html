@@ -81,8 +81,33 @@
         }
     }
 
+    // Prevent double submission
+    let isSubmitting = false;
+    
     // Add event listeners when DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
+        // Add form submission prevention
+        const form = document.getElementById('workoutForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Mark as submitting
+                isSubmitting = true;
+                
+                // Disable submit button and show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Saving...';
+                    submitBtn.classList.add('btn--disabled');
+                }
+            });
+        }
+        
         const sportSelect = document.querySelector('select[name="sport"]');
         const intensitySelect = document.querySelector('select[name="intensity"]');
         const timeInput = document.querySelector('input[name="time"]');

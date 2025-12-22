@@ -1,18 +1,36 @@
 from django.core.exceptions import ValidationError
-from datetime import datetime, timezone
+from django.utils import timezone
+from datetime import datetime, timedelta
 import pytz as tz
 import re
 
 
 def validate_date(value):
-    current_date = datetime.now().replace(
-        tzinfo=tz.timezone('America/Mexico_City'))
-    if (value - current_date).seconds > 0 and (value - current_date).days >= 0:
+    """Validate workout date with proper timezone handling.
+    
+    This function ensures workout dates are valid regardless of the user's timezone.
+    All comparisons are done in UTC to avoid timezone conversion issues.
+    """
+    # Get current time in UTC (Django's timezone-aware now())
+    current_date = timezone.now()
+    
+    # Ensure the submitted value is timezone-aware
+    if timezone.is_naive(value):
+        # If somehow a naive datetime comes through, make it aware in UTC
+        value = timezone.make_aware(value, timezone.utc)
+    
+    # Calculate time difference
+    time_diff = current_date - value
+    
+    # Check if workout is in the future (allowing small buffer for clock differences)
+    if time_diff.total_seconds() < -300:  # 5 minute buffer for clock differences
         raise ValidationError("You cannot submit workouts in the future!")
-    elif (value - current_date).days < -3:
+    
+    # Check if workout is too old (more than 2 days ago)
+    if time_diff > timedelta(days=2):
         raise ValidationError("You cannot submit workouts older than two days!")
-    else:
-        return value
+    
+    return value
 
 def validate_cec(value):
     if "@" in value:

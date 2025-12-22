@@ -137,17 +137,26 @@ class Profile(models.Model):
         Returns a tuple: (current_streak, longest_streak)
         """
         from datetime import timedelta
+        from django.utils import timezone
         
-        # Get all unique workout dates for this profile, ordered by date
-        workout_dates = Workout.objects.filter(
+        # Get all workouts and extract dates in UTC to avoid timezone issues
+        # This ensures that workout dates are consistent regardless of user's timezone
+        workouts = Workout.objects.filter(
             belongs_to=self
-        ).dates('date_time', 'day').order_by('date_time__date')
+        ).order_by('date_time')
         
-        if not workout_dates:
+        if not workouts:
             return 0, 0
         
-        # Convert to list for easier processing
-        dates_list = list(workout_dates)
+        # Extract unique dates in UTC
+        dates_set = set()
+        for workout in workouts:
+            # Convert to UTC and extract date to avoid timezone display issues
+            utc_date = workout.date_time.astimezone(timezone.utc).date()
+            dates_set.add(utc_date)
+        
+        # Convert to sorted list for easier processing
+        dates_list = sorted(list(dates_set))
         
         # Calculate longest streak
         longest = 1
@@ -162,8 +171,8 @@ class Profile(models.Model):
                 current = 1
         
         # Calculate current streak (from most recent date backwards)
-        from django.utils import timezone
-        today = timezone.now().date()
+        # Use UTC for consistent date comparison across all timezones
+        today = timezone.now().astimezone(timezone.utc).date()
         
         current_streak = 0
         if dates_list:
@@ -384,6 +393,52 @@ class WorkoutForm(ModelForm):
 
     def clean_date_time(self):
         return validate_date(self.cleaned_data['date_time'])
+    
+    def clean(self):
+        """Check for duplicate workout submissions."""
+        cleaned_data = super().clean()
+        if not self.instance.pk:  # Only check on new workouts, not edits
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            # Get the form data
+            date_time = cleaned_data.get('date_time')
+            time_field = cleaned_data.get('time')
+            sport = cleaned_data.get('sport')
+            intensity = cleaned_data.get('intensity')
+            belongs_to = self.instance.belongs_to
+            
+            if date_time and time_field and sport and intensity and belongs_to:
+                # Calculate expected distance for comparison
+                duration_minutes = time_field.hour * 60 + time_field.minute
+                from .views import convert_to_km
+                expected_distance = convert_to_km(sport.name, intensity.name, duration_minutes)
+                
+                if expected_distance:
+                    # Check for duplicate: same user, similar distance, same date within 2 minutes
+                    time_window_start = date_time - timedelta(minutes=2)
+                    time_window_end = date_time + timedelta(minutes=2)
+                    
+                    # Allow 0.5km variance for rounding
+                    from decimal import Decimal
+                    distance_min = Decimal(expected_distance) - Decimal('0.5')
+                    distance_max = Decimal(expected_distance) + Decimal('0.5')
+                    
+                    duplicate_exists = Workout.objects.filter(
+                        belongs_to=belongs_to,
+                        distance__gte=distance_min,
+                        distance__lte=distance_max,
+                        date_time__gte=time_window_start,
+                        date_time__lte=time_window_end
+                    ).exists()
+                    
+                    if duplicate_exists:
+                        raise ValidationError(
+                            "This workout appears to be a duplicate. If you need to submit another workout, "
+                            "please wait a few minutes or use a slightly different time."
+                        )
+        
+        return cleaned_data
 
 
 class PartnerWorkoutForm(ModelForm):
@@ -1011,19 +1066,22 @@ def save_workout(sender, instance, **kwargs):
     # Update personal distance
     profile = instance.belongs_to
     profile.distance += Decimal(instance.distance)
-
-    profile.save()
     if instance.is_gift:
         return
     # Track first workout date
+    # Use UTC date to avoid timezone conversion issues
     if not profile.first_workout_date:
-        profile.first_workout_date = instance.date_time.date()
+        from django.utils import timezone as tz
+        profile.first_workout_date = instance.date_time.astimezone(tz.utc).date()
     
     # Count unique workout days for this profile
-    unique_days = Workout.objects.filter(
-        belongs_to=profile
-    ).dates('date_time', 'day').count()
-    profile.workout_days_count = unique_days
+    # Use UTC dates to avoid timezone issues
+    workouts_for_count = Workout.objects.filter(belongs_to=profile)
+    unique_dates = set()
+    for w in workouts_for_count:
+        from django.utils import timezone as tz
+        unique_dates.add(w.date_time.astimezone(tz.utc).date())
+    profile.workout_days_count = len(unique_dates)
     
     # Calculate and update streaks
     current_streak, longest_streak = profile.calculate_streaks()
@@ -1099,6 +1157,7 @@ def save_workout(sender, instance, **kwargs):
     if profile.distance >= profile.user_goal_km:
         profile.user_goal = True
     
+    # Save profile once after all updates to prevent race conditions
     profile.save()
 
 # Reference Data ViewSet - Single endpoint for all workout reference data

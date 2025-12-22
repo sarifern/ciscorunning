@@ -31,6 +31,21 @@ ACTIVE = False
 DATE = datetime.now().replace(tzinfo=tz.timezone("America/Mexico_City"))
 
 
+def is_challenge_active():
+    """Helper function to determine if the challenge is currently active.
+    
+    Returns:
+        bool -- True if the challenge is active, False otherwise
+    """
+    current_date = datetime.now().replace(tzinfo=tz.timezone("America/Mexico_City"))
+    if os.environ.get("DEBUG_PREF") == "True":
+        # this is on BETA bypass
+        current_date = datetime(2025, 12, 15, 0, 0, 0).replace(
+            tzinfo=tz.timezone("America/Mexico_City")
+        )
+    return current_date >= DATE_START and current_date <= DATE_END
+
+
 @login_required
 def home(request):
     global DATE, ACTIVE
@@ -40,10 +55,7 @@ def home(request):
         DATE = datetime(2025, 12, 15, 0, 0, 0).replace(
             tzinfo=tz.timezone("America/Mexico_City")
         )
-    if DATE >= DATE_START and DATE <= DATE_END:
-        ACTIVE = True
-    else:
-        ACTIVE = False
+    ACTIVE = is_challenge_active()
     try:
         if request.user.profile.cec:
             return my_workouts(request)
@@ -88,7 +100,9 @@ def my_profile(request):
         'remaining_days': remaining_days.days,
         }
     """
-    global DATE, DATE_END, ACTIVE
+    # Calculate active status dynamically instead of using potentially stale global variable
+    active = is_challenge_active()
+    remaining_days = DATE_END - datetime.now().replace(tzinfo=tz.timezone("America/Mexico_City"))
     
     # Handle category change POST request
     if request.method == "POST" and "change_category" in request.POST:
@@ -146,7 +160,6 @@ def my_profile(request):
     try:
         workouts = Workout.objects.filter(belongs_to=request.user.profile)
         awards = Award.objects.filter(user=request.user)
-        remaining_days = DATE_END - DATE
         list_in_category = Profile.objects.filter(
             category=request.user.profile.category
         ).order_by("-distance")
@@ -168,7 +181,7 @@ def my_profile(request):
         "ic_marathon_app/my_profile.html",
         {
             "earned_awards": awards,
-            "active": ACTIVE,
+            "active": active,
             "position": index,
             "workout_count": len(workouts),
             "aggr_distance": request.user.profile.distance,
@@ -198,7 +211,8 @@ def my_workouts(request):
         'active': active,
         }
     """
-    global ACTIVE
+    # Calculate active status dynamically instead of using potentially stale global variable
+    active = is_challenge_active()
     try:
         workouts = Workout.objects.filter(belongs_to=request.user.profile).order_by(
             "date_time"
@@ -228,7 +242,7 @@ def my_workouts(request):
         {
             "workouts": workouts_table,
             "earned_awards": awards,
-            "active": ACTIVE,
+            "active": active,
             "category": request.user.profile.category,
             "pending_requests_count": pending_requests_count,
         },
@@ -659,7 +673,7 @@ def pending_partner_requests(request):
         {
             "requests_sent": requests_sent,
             "requests_received": requests_received,
-            "active": ACTIVE,
+            "active": is_challenge_active(),
         },
     )
 

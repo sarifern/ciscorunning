@@ -24,6 +24,9 @@
         window.location.href = "/";
     }
 
+    // Prevent double submission
+    let isSubmitting = false;
+
     function parseDuration(timeStr) {
         // Parse time in format HH:MM
         if (!timeStr || timeStr.trim() === '') return 0;
@@ -93,6 +96,28 @@
         }
 
         calculateEstimatedKm();
+        
+        // Add form submission prevention
+        const form = document.getElementById('partnerWorkoutForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Mark as submitting
+                isSubmitting = true;
+                
+                // Disable submit button and show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Saving...';
+                    submitBtn.classList.add('btn--disabled');
+                }
+            });
+        }
     });
 </script>
 
