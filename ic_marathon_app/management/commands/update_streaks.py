@@ -95,10 +95,9 @@ class Command(BaseCommand):
         
         IMPORTANT: Workouts submitted before Dec 22, 2025 19:11 UTC were stored
         with incorrect timezone info (local Mexico time saved as UTC).
-        We correct this in the calculation WITHOUT modifying stored data
-        to preserve what users see in the admin/UI.
+        We DON'T correct them - we use the stored time as local time directly.
         
-        Streak logic: Based on calendar days - any workout on a day counts.
+        Streak logic: Based on calendar days in the user's local timezone.
         Consecutive calendar days = maintained streak, regardless of time.
         
         Args:
@@ -109,6 +108,9 @@ class Command(BaseCommand):
         """
         # Cutoff for timezone fix: Dec 22, 2025 at 19:11:04 UTC
         TIMEZONE_FIX_CUTOFF = datetime(2025, 12, 22, 19, 11, 0, tzinfo=pytz.UTC)
+        # User timezones
+        mexico_tz = pytz.timezone('America/Mexico_City')
+        brazil_tz = pytz.timezone('America/Sao_Paulo')
         
         # Get all workouts for this profile
         workouts = Workout.objects.filter(belongs_to=profile).order_by('date_time')
@@ -116,23 +118,21 @@ class Command(BaseCommand):
         if not workouts:
             return 0, 0
         
-        # Extract unique dates with timezone correction
+        # Extract unique dates in LOCAL timezone
         dates_set = set()
         for workout in workouts:
-            # Special correction for user 'wrocha' (Brazil/São Paulo, UTC-3)
-            if profile.cec == 'wrocha' and workout.date_time < TIMEZONE_FIX_CUTOFF:
-                # Old workout from Brazil: ADD 3 hours to get correct UTC date
-                corrected_time = workout.date_time + timedelta(hours=3)
-                utc_date = corrected_time.astimezone(timezone.utc).date()
-            elif workout.date_time < TIMEZONE_FIX_CUTOFF:
-                # Old workout from Mexico: ADD 6 hours to get correct UTC date
-                corrected_time = workout.date_time + timedelta(hours=6)
-                utc_date = corrected_time.astimezone(timezone.utc).date()
+            if workout.date_time < TIMEZONE_FIX_CUTOFF:
+                # Old workouts: stored time is already local time (just labeled as UTC)
+                # Use it directly as a date without timezone conversion
+                local_date = workout.date_time.date()
             else:
-                # New workout: already has correct timezone
-                utc_date = workout.date_time.astimezone(timezone.utc).date()
+                # New workouts: have correct UTC timezone, convert to local
+                if profile.cec == 'wrocha':
+                    local_date = workout.date_time.astimezone(brazil_tz).date()
+                else:
+                    local_date = workout.date_time.astimezone(mexico_tz).date()
             
-            dates_set.add(utc_date)
+            dates_set.add(local_date)
         
         # Convert to sorted list
         dates_list = sorted(list(dates_set))
@@ -148,8 +148,12 @@ class Command(BaseCommand):
             else:
                 current = 1
         
-        # Calculate current streak
-        today = timezone.now().astimezone(timezone.utc).date()
+        # Calculate current streak (compare with today in user's local timezone)
+        if profile.cec == 'wrocha':
+            today = timezone.now().astimezone(brazil_tz).date()
+        else:
+            today = timezone.now().astimezone(mexico_tz).date()
+        
         current_streak = 0
         
         if dates_list:
