@@ -98,6 +98,9 @@ class Command(BaseCommand):
         We correct this in the calculation WITHOUT modifying stored data
         to preserve what users see in the admin/UI.
         
+        Streak logic: Workouts within 30 hours (1 day + 6 hours) maintain the streak.
+        Each workout counts as 1 day in the streak.
+        
         Args:
             profile: User profile to calculate streaks for
             
@@ -106,6 +109,7 @@ class Command(BaseCommand):
         """
         # Cutoff for timezone fix: Dec 22, 2025 at 19:11:04 UTC
         TIMEZONE_FIX_CUTOFF = datetime(2025, 12, 22, 19, 11, 0, tzinfo=pytz.UTC)
+        STREAK_THRESHOLD_HOURS = 30  # 1 day + 6 hours flexibility
         
         # Get all workouts for this profile
         workouts = Workout.objects.filter(belongs_to=profile).order_by('date_time')
@@ -113,54 +117,63 @@ class Command(BaseCommand):
         if not workouts:
             return 0, 0
         
-        # Extract unique dates with timezone correction
-        dates_set = set()
+        # Get workout datetimes with timezone correction (keep as datetimes, not dates)
+        corrected_datetimes = []
         for workout in workouts:
             # Special correction for user 'wrocha' (Brazil/São Paulo, UTC-3)
             if profile.cec == 'wrocha' and workout.date_time < TIMEZONE_FIX_CUTOFF:
-                # Old workout from Brazil: ADD 3 hours to get correct UTC date
-                # (stored time was local São Paulo time incorrectly saved as UTC)
-                # São Paulo time is UTC-3, so to convert to UTC we ADD 3 hours
+                # Old workout from Brazil: ADD 3 hours to get correct UTC
                 corrected_time = workout.date_time + timedelta(hours=3)
-                utc_date = corrected_time.astimezone(timezone.utc).date()
+                corrected_datetimes.append(corrected_time.astimezone(timezone.utc))
             elif workout.date_time < TIMEZONE_FIX_CUTOFF:
-                # Old workout from Mexico: ADD 6 hours to get correct UTC date
-                # (stored time was local Mexico time incorrectly saved as UTC)
-                # Mexico time is UTC-6, so to convert to UTC we ADD 6 hours
+                # Old workout from Mexico: ADD 6 hours to get correct UTC
                 corrected_time = workout.date_time + timedelta(hours=6)
-                utc_date = corrected_time.astimezone(timezone.utc).date()
+                corrected_datetimes.append(corrected_time.astimezone(timezone.utc))
             else:
                 # New workout: already has correct timezone
-                utc_date = workout.date_time.astimezone(timezone.utc).date()
-            
-            dates_set.add(utc_date)
+                corrected_datetimes.append(workout.date_time.astimezone(timezone.utc))
         
-        # Convert to sorted list
-        dates_list = sorted(list(dates_set))
+        # Sort by datetime
+        corrected_datetimes.sort()
         
-        # Calculate longest streak
+        # Remove duplicate dates (multiple workouts on same day = count as 1)
+        unique_date_workouts = []
+        seen_dates = set()
+        for dt in corrected_datetimes:
+            date = dt.date()
+            if date not in seen_dates:
+                seen_dates.add(date)
+                unique_date_workouts.append(dt)
+        
+        # Calculate longest streak based on 30-hour threshold between unique-date workouts
         longest = 1
         current = 1
         
-        for i in range(1, len(dates_list)):
-            if (dates_list[i] - dates_list[i-1]).days == 1:
+        for i in range(1, len(unique_date_workouts)):
+            time_diff = unique_date_workouts[i] - unique_date_workouts[i-1]
+            hours_diff = time_diff.total_seconds() / 3600
+            
+            if hours_diff <= STREAK_THRESHOLD_HOURS:
                 current += 1
                 longest = max(longest, current)
             else:
                 current = 1
         
         # Calculate current streak
-        today = timezone.now().astimezone(timezone.utc).date()
+        now = timezone.now().astimezone(timezone.utc)
         current_streak = 0
         
-        if dates_list:
-            most_recent = dates_list[-1]
-            days_since_last = (today - most_recent).days
+        if unique_date_workouts:
+            most_recent = unique_date_workouts[-1]
+            hours_since_last = (now - most_recent).total_seconds() / 3600
             
-            if days_since_last <= 1:
+            if hours_since_last <= STREAK_THRESHOLD_HOURS:
                 current_streak = 1
-                for i in range(len(dates_list) - 2, -1, -1):
-                    if (dates_list[i+1] - dates_list[i]).days == 1:
+                for i in range(len(unique_date_workouts) - 2, -1, -1):
+                    time_diff = unique_date_workouts[i+1] - unique_date_workouts[i]
+                    hours_diff = time_diff.total_seconds() / 3600
+                    
+                    if hours_diff <= STREAK_THRESHOLD_HOURS:
                         current_streak += 1
                     else:
                         break
