@@ -1034,10 +1034,9 @@ def delete_workout(sender, instance, **kwargs):
     ).dates('date_time', 'day').count()
     profile.workout_days_count = unique_days
     
-    # Recalculate streaks after deletion
-    current_streak, longest_streak = profile.calculate_streaks()
-    profile.current_streak = current_streak
-    profile.longest_streak = longest_streak
+    # NOTE: Streak calculation moved to management command (update_streaks.py)
+    # Run: python manage.py update_streaks (scheduled every 10 minutes)
+    # Streaks will be updated by the scheduled command
     
     # If no workouts left, reset first workout date
     if unique_days == 0:
@@ -1083,16 +1082,10 @@ def save_workout(sender, instance, **kwargs):
         unique_dates.add(w.date_time.astimezone(tz.utc).date())
     profile.workout_days_count = len(unique_dates)
     
-    # Calculate and update streaks
-    current_streak, longest_streak = profile.calculate_streaks()
-    profile.current_streak = current_streak
-    profile.longest_streak = longest_streak
-    
-    # Log streak milestones
-    if current_streak > 0 and current_streak % 7 == 0:
-        print(f"🔥 {profile.cec} hit a {current_streak}-day streak!")
-    if longest_streak > profile.longest_streak:
-        print(f"🏆 {profile.cec} set a new personal record: {longest_streak}-day streak!")
+    # NOTE: Streak calculation moved to management command (update_streaks.py)
+    # Run: python manage.py update_streaks (scheduled every 10 minutes)
+    # This ensures streaks are updated even when no workouts are added
+    # and can properly detect broken streaks
     
     # Anti-sandbagging logic: Detect skilled runners trying to stay in beginner category
     # Calculate average distance per workout to identify experienced runners
