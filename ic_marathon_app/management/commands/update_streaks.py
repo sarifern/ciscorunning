@@ -91,14 +91,12 @@ class Command(BaseCommand):
     
     def calculate_streaks_with_correction(self, profile):
         """
-        Calculate streaks with timezone correction for old workouts.
-        
-        IMPORTANT: Workouts submitted before Dec 22, 2025 19:11 UTC were stored
-        with incorrect timezone info (local Mexico time saved as UTC).
-        We DON'T correct them - we use the stored time as local time directly.
+        Calculate streaks with proper timezone handling.
         
         Streak logic: Based on calendar days in the user's local timezone.
         Consecutive calendar days = maintained streak, regardless of time.
+        All workouts are stored in UTC and must be converted to local timezone
+        to get the correct calendar date for streak calculation.
         
         Args:
             profile: User profile to calculate streaks for
@@ -106,8 +104,6 @@ class Command(BaseCommand):
         Returns:
             Tuple of (current_streak, longest_streak)
         """
-        # Cutoff for timezone fix: Dec 22, 2025 at 19:11:04 UTC
-        TIMEZONE_FIX_CUTOFF = datetime(2025, 12, 22, 19, 11, 0, tzinfo=pytz.UTC)
         # User timezones
         mexico_tz = pytz.timezone('America/Mexico_City')
         brazil_tz = pytz.timezone('America/Sao_Paulo')
@@ -119,18 +115,13 @@ class Command(BaseCommand):
             return 0, 0
         
         # Extract unique dates in LOCAL timezone
+        # All workouts are in UTC, convert to user's local timezone
         dates_set = set()
         for workout in workouts:
-            if workout.date_time < TIMEZONE_FIX_CUTOFF:
-                # Old workouts: stored time is already local time (just labeled as UTC)
-                # Use it directly as a date without timezone conversion
-                local_date = workout.date_time.date()
+            if profile.cec == 'wrocha':
+                local_date = workout.date_time.astimezone(brazil_tz).date()
             else:
-                # New workouts: have correct UTC timezone, convert to local
-                if profile.cec == 'wrocha':
-                    local_date = workout.date_time.astimezone(brazil_tz).date()
-                else:
-                    local_date = workout.date_time.astimezone(mexico_tz).date()
+                local_date = workout.date_time.astimezone(mexico_tz).date()
             
             dates_set.add(local_date)
         
