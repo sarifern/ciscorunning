@@ -151,8 +151,9 @@ class Command(BaseCommand):
             most_recent = dates_list[-1]
             days_since_last = (today - most_recent).days
             
-            # Allow today or yesterday to maintain streak
-            if days_since_last <= 1:
+            # Allow up to 2 days to maintain streak (matching workout submission window)
+            # Users can submit workouts up to 2 days old, so streak isn't broken until day 3
+            if days_since_last <= 2:
                 current_streak = 1
                 for i in range(len(dates_list) - 2, -1, -1):
                     if (dates_list[i+1] - dates_list[i]).days == 1:
