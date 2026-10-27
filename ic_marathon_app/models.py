@@ -1068,19 +1068,17 @@ def save_workout(sender, instance, **kwargs):
     if instance.is_gift:
         return
     # Track first workout date
-    # Use UTC date to avoid timezone conversion issues
+    # Use database timezone (respects Django TIME_ZONE setting)
     if not profile.first_workout_date:
         from django.utils import timezone as tz
-        profile.first_workout_date = instance.date_time.astimezone(tz.utc).date()
+        profile.first_workout_date = instance.date_time.date()
     
     # Count unique workout days for this profile
-    # Use UTC dates to avoid timezone issues
-    workouts_for_count = Workout.objects.filter(belongs_to=profile)
-    unique_dates = set()
-    for w in workouts_for_count:
-        from django.utils import timezone as tz
-        unique_dates.add(w.date_time.astimezone(tz.utc).date())
-    profile.workout_days_count = len(unique_dates)
+    # Use Django's dates() method which respects TIME_ZONE setting
+    # This matches the calculation in delete_workout signal
+    profile.workout_days_count = Workout.objects.filter(
+        belongs_to=profile
+    ).dates('date_time', 'day').count()
     
     # NOTE: Streak calculation moved to management command (update_streaks.py)
     # Run: python manage.py update_streaks (scheduled every 10 minutes)
