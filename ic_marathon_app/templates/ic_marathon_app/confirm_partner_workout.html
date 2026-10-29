@@ -90,9 +90,20 @@
             {% if workout.photo_evidence %}
             <div class="row base-margin-top">
                 <div class="col-12">
-                    <strong>Photo Evidence:</strong>
+                    <strong>Submitter's Workout Evidence:</strong>
                     <div class="base-margin-top">
                         <img src="{{ workout.photo_evidence.url }}" alt="Workout Evidence" style="max-width: 100%; height: auto; border-radius: 4px;">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if workout.partner_selfie %}
+            <div class="row base-margin-top">
+                <div class="col-12">
+                    <strong>Selfie with Both Partners:</strong>
+                    <div class="base-margin-top">
+                        <img src="{{ workout.partner_selfie.url }}" alt="Selfie with both partners" style="max-width: 100%; height: auto; border-radius: 4px;">
                     </div>
                 </div>
             </div>
@@ -103,13 +114,40 @@
                 Both of you will receive {{ bonus_distance }} km (1.5x bonus) added to your totals.
             </div>
 
-            <form method="POST" class="base-margin-top">
+            <form method="POST" class="base-margin-top" enctype="multipart/form-data">
                 {% csrf_token %}
+                {% if confirmation_form.errors %}
+                <div class="alert alert-error">
+                    {% for field in confirmation_form %}
+                        {% for error in field.errors %}
+                        <div>{{ field.label }}: {{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                    {{ confirmation_form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="id_partner_photo_evidence">Your Workout Evidence *</label>
+                    {{ confirmation_form.partner_photo_evidence }}
+                    <small class="text-muted">Upload your own evidence for this workout (maximum 10 MB).</small>
+                </div>
+
+                {% if not workout.partner_selfie %}
+                <div class="form-group">
+                    <label for="id_partner_selfie">Selfie with {{ workout.belongs_to.cec }} *</label>
+                    {{ confirmation_form.partner_selfie }}
+                    <small class="text-muted">The submitter did not include a selfie, so you must provide one to confirm.</small>
+                </div>
+                {% else %}
+                <div class="alert alert-info">The submitter already provided a selfie. You only need to upload your workout evidence.</div>
+                {% endif %}
+
                 <div class="flex flex-center flex-wrap">
                     <button type="submit" name="action" value="confirm" class="btn btn--success padding margin-right">
                         ✓ Confirm Workout
                     </button>
-                    <button type="submit" name="action" value="decline" class="btn btn--danger padding">
+                    <button type="submit" name="action" value="decline" formnovalidate class="btn btn--danger padding">
                         ✗ Decline Request
                     </button>
                 </div>

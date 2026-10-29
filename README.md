@@ -266,46 +266,42 @@ Work out with a registered partner to earn bonus distance!
 ### How It Works
 
 1. **Complete Workout Together**: Do your workout activity with your partner
-2. **Take Photo Evidence**: Capture photo showing **both Cisconians** together during or after the workout
-3. **Submit Workout**: Enter workout details and select your partner from the dropdown
-4. **Upload Photo**: Attach the photo showing both participants
-5. **Partner Confirms**: Partner has 48 hours to confirm the workout
-6. **Bonus Applied**: After confirmation, both receive 1.5x distance!
+2. **Submit Workout Evidence**: Upload your own evidence for the workout
+3. **Add a Selfie (Optional)**: Include a selfie with both participants, or let your partner upload it when confirming
+4. **Submit Workout**: Enter workout details and select your partner from the dropdown
+5. **Partner Reviews and Uploads Evidence**: The partner must upload their own workout evidence. If no selfie was submitted, they must upload one before confirming
+6. **Partner Confirms**: The partner has 48 hours to review and confirm the workout
+7. **Bonus Applied**: After confirmation, both receive 1.5x distance!
 
 ### Rules
 
 - **Partner must be registered** in the system (same edition)
-- **Photo must show both participants** - this is required for verification
+- **Submitter workout evidence** - required for every partner workout
+- **Partner workout evidence** - the confirming partner must upload their own evidence
+- **Selfie with both participants** - optional for the submitter; required from the partner if the submitter did not provide one
 - **Same category track** - both must be Advanced Runners or both Advanced Freestylers
 - **48-hour confirmation window** - partner must confirm within 48 hours
 - **1.5x distance bonus** - both users receive: `base_distance × 1.5`
-- **Photo sharing** - the same photo is used for both workout records
+- **Evidence records** - submitter evidence, partner evidence, and any selfie are retained with both linked workout records
 
-### Important: Photo Evidence Requirements
+### Evidence Requirements
 
-⚠️ **The photo must clearly show BOTH Cisconians together**
-
-Valid examples:
-- ✅ Selfie with both participants after the run
-- ✅ Photo of both during the activity (cycling, hiking, etc.)
-- ✅ Group shot at the workout location
-
-Invalid examples:
-- ❌ Solo photo of just one person
-- ❌ Separate photos of each person
-- ❌ Screenshot of workout data only
+The submitter's workout evidence and the confirming partner's workout evidence are separate uploads. A selfie showing both participants can be supplied by either person, but the partner must add it during confirmation if it is missing.
 
 ### Workflow
 
 **When you submit a partner workout:**
 1. Workout is created with `partner_confirmed = False`
 2. Partner receives notification with bell icon indicator
-3. Partner reviews workout and photo evidence
-4. Partner can **Confirm** or **Decline**
+3. Partner reviews the submitter's workout evidence and any selfie
+4. Partner uploads their own workout evidence
+5. If no selfie is present, partner uploads one before confirmation
+6. Partner can **Confirm** or **Decline**
 
 **If Confirmed:**
 - Original workout gets 1.5x bonus distance
 - Matching workout created for partner with same bonus
+- Both workout records retain the submitter's evidence, partner's evidence, and selfie if provided
 - Both users earn badges if distance thresholds are met
 
 **If Declined or Expired (>48 hours):**
@@ -317,19 +313,21 @@ Invalid examples:
 
 ```
 User A completes 10km run with User B as partner
-User A submits workout with photo showing both users
-Photo is uploaded with workout details
+User A submits the workout with their own evidence
+User A may also upload a selfie with both participants
 
 User B receives notification to confirm
 User B has 48 hours to confirm
 
-If confirmed:
+If confirmed (both evidence uploads are required; a selfie is also required if User A did not upload one):
+  User B uploads their own workout evidence
+  If User A did not upload a selfie, User B uploads one during confirmation
   User A gets: 10km × 1.5 = 15km
   User B gets: 10km × 1.5 = 15km
-  Both workouts linked with same photo
+  Both workouts retain each person's evidence and the selfie
 
 If declined/expired:
-  User A gets: 10km (base distance only, no bonus)
+  User A keeps the workout as a solo workout: 10km (base distance only, no bonus)
   User B gets: nothing (no workout created)
 ```
 

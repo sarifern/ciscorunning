@@ -1,7 +1,7 @@
 from allauth.socialaccount.models import SocialAccount
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
-from .models import ProfileForm, Profile, SportIntensityMapping, Workout, WorkoutForm, FSWorkoutForm
+from .models import ProfileForm, Profile, SportIntensityMapping, Workout, WorkoutForm, FSWorkoutForm, PartnerWorkoutConfirmationForm
 from badgify.models import Award, Badge
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
@@ -550,11 +550,48 @@ def confirm_partner_workout(request, workout_uuid):
     if original_workout.partner_confirmed:
         messages.info(request, "This partner workout has already been confirmed.")
         return redirect("home")
+
+    duration_display = None
+    if original_workout.time:
+        duration_display = f"{original_workout.time.hour:02d}:{original_workout.time.minute:02d}"
+
+    require_selfie = not bool(original_workout.partner_selfie)
+    confirmation_form = PartnerWorkoutConfirmationForm(
+        require_selfie=require_selfie
+    )
+    confirmation_context = {
+        "workout": original_workout,
+        "bonus_distance": float(original_workout.base_distance) * 1.5,
+        "expiration_status": original_workout.get_expiration_status(),
+        "duration_display": duration_display,
+        "confirmation_form": confirmation_form,
+    }
     
     if request.method == "POST":
         action = request.POST.get("action")
         
         if action == "confirm":
+            confirmation_form = PartnerWorkoutConfirmationForm(
+                request.POST,
+                request.FILES,
+                require_selfie=require_selfie,
+            )
+            if not confirmation_form.is_valid():
+                confirmation_context["confirmation_form"] = confirmation_form
+                return render(
+                    request,
+                    "ic_marathon_app/confirm_partner_workout.html",
+                    confirmation_context,
+                )
+
+            original_workout.partner_photo_evidence = confirmation_form.cleaned_data[
+                "partner_photo_evidence"
+            ]
+            if confirmation_form.cleaned_data.get("partner_selfie"):
+                original_workout.partner_selfie = confirmation_form.cleaned_data[
+                    "partner_selfie"
+                ]
+
             # Mark original as confirmed
             original_workout.partner_confirmed = True
             original_workout.distance = original_workout.base_distance * Decimal("1.5")

@@ -410,12 +410,15 @@ curl -X DELETE https://ciscorunning.herokuapp.com/api/workouts/{UUID}/ \
 **Steps:**
 1. Navigate to "Add Partner Workout" page
 2. Select partner from dropdown (filtered by category)
-3. Enter workout details (distance, date, photo)
-4. Submit request
+3. Enter workout details and upload the submitter's required workout evidence
+4. Optionally upload a selfie with both participants
+5. Submit request
 
 **Expected Outcome:**
 - ✅ Partner dropdown shows only users in same track
 - ✅ Cannot select self as partner
+- ✅ Submitter workout evidence is required
+- ✅ Selfie upload is optional for the submitter
 - ✅ Workout created with `partner_confirmed=False`
 - ✅ Base distance stored
 - ✅ Distance NOT added to profile yet
@@ -450,8 +453,9 @@ Navigate to `/pending_partner_requests/`
 
 **Expected Outcome:**
 - ✅ List of requests from other users
-- ✅ Shows requester name, distance, date, photo
-- ✅ Two action buttons: "Accept" and "Decline"
+- ✅ Shows requester name, distance, date, and submitter evidence
+- ✅ Shows the selfie when the submitter included one
+- ✅ Review page provides confirmation uploads and a decline option
 - ✅ Workout details clearly displayed
 
 **Web Test:**
@@ -465,8 +469,9 @@ Navigate to `/pending_partner_requests/`
 **Steps:**
 1. User B navigates to Pending Requests
 2. Reviews workout details
-3. Clicks "Accept" button
-4. Confirms acceptance
+3. Uploads their own workout evidence
+4. If the submitter did not include a selfie, uploads a selfie with the submitter
+5. Confirms acceptance
 
 **Expected Outcome:**
 - ✅ User A's workout:
@@ -477,7 +482,7 @@ Navigate to `/pending_partner_requests/`
   - New workout created automatically
   - Distance: 15km (same as User A)
   - Same date, sport, intensity as original
-  - Photo copied/linked
+  - Submitter evidence, partner evidence, and selfie (if supplied) retained
   - Added to User B's profile total
 - ✅ Both workouts:
   - Share same `partner_workout_group` UUID
@@ -498,8 +503,8 @@ Navigate to `/confirm_partner_workout/{UUID}/` and click Accept
 3. Confirms decline
 
 **Expected Outcome:**
-- ✅ User A's workout deleted completely
-- ✅ User A's distance unchanged (never added)
+- ✅ User A's workout is converted to a solo workout
+- ✅ User A retains only the base distance (no partner bonus)
 - ✅ No workout created for User B
 - ✅ Request removed from pending list
 - ✅ No notification sent to User A (silent decline)
@@ -508,7 +513,24 @@ Navigate to `/confirm_partner_workout/{UUID}/` and click Accept
 **Web Test:**
 Navigate to `/confirm_partner_workout/{UUID}/` and click Decline
 
-#### Test Case 4.6: Category Mismatch Prevention
+#### Test Case 4.6: Validate Partner Evidence Requirements
+**Objective:** Verify evidence and selfie requirements on both sides of the request
+
+**Steps:**
+1. Submit a partner workout without the submitter's workout evidence
+2. Submit the request with workout evidence but without a selfie
+3. As the partner, try to confirm without uploading workout evidence
+4. Upload partner evidence but omit the selfie
+5. Repeat with the submitter having already uploaded a selfie
+
+**Expected Outcome:**
+- ✅ Submission is blocked when submitter workout evidence is missing
+- ✅ Submission succeeds without a selfie
+- ✅ Confirmation is blocked when partner workout evidence is missing
+- ✅ Confirmation is blocked without a selfie when submitter did not provide one
+- ✅ Confirmation succeeds without a new selfie when submitter already provided one
+
+#### Test Case 4.7: Category Mismatch Prevention
 **Objective:** Verify runner can't partner with freestyler
 
 **Steps:**

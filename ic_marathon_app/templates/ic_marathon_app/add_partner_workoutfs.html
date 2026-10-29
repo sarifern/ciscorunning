@@ -135,13 +135,8 @@
                 <strong>How it works:</strong>
                 <ul style="margin: 10px 0; padding-left: 20px;">
                     <li>Complete the workout together with your training partner</li>
-                    <li><strong>⚠️ Photo must show BOTH Cisconians together</strong> (required for verification)
-                        <ul style="margin: 5px 0; padding-left: 20px; font-size: 0.9em;">
-                            <li>The photo must clearly show BOTH Cisconians together</li>
-                            <li>✅ Collage including: Selfie with both participants (during or after the workout) + data of the workout (date and duration).</li>
-                            <li>✅ Collage including: Group shot at the workout location and workout + data of the workout (date and duration).</li>
-                        </ul>
-                    </li>
+                    <li>Your workout evidence is required.</li>
+                    <li>A selfie with both participants is optional here. If you skip it, your partner must upload one before confirming.</li>
                     <li>Your partner will receive a confirmation request</li>
                     <li>Partner has 48 hours to confirm the workout</li>
                     <li>Once confirmed, you both get 1.5x distance bonus!</li>
@@ -212,9 +207,16 @@
 
             <div class="form-group text-normal">
                 <div class="qtr-padding-bottom">
-                    <label>Photo Evidence *</label> 
+                    <label>Your Workout Evidence *</label>
                     {{ form.photo_evidence }}
-                    <small class="text-muted">Screenshot showing both participants</small>
+                    <small class="text-muted">Upload evidence for your workout. A selfie with your partner can be added here or by your partner when they confirm.</small>
+                </div>
+            </div>
+
+            <div class="form-group text-normal">
+                <div class="qtr-padding-bottom">
+                    <label>Selfie with Training Partner (optional)</label>
+                    {{ form.partner_selfie }}
                 </div>
             </div>
 

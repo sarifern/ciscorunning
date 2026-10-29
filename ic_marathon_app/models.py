@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from decimal import *
 from django.db.models.signals import post_save, post_delete
-from django.core.files.storage import default_storage
 from django.contrib.staticfiles.storage import staticfiles_storage
 from ic_marathon_site.storage_backends import PrivateMediaStorage
 from django.forms import ModelForm
@@ -247,6 +246,22 @@ class Workout(models.Model):
     photo_evidence = models.ImageField(verbose_name="Evidence",
                                        validators=[validate_file_size],
                                        storage=PrivateMediaStorage())
+    partner_selfie = models.ImageField(
+        verbose_name="Partner Selfie",
+        upload_to="partner_selfies/",
+        validators=[validate_file_size],
+        storage=PrivateMediaStorage(),
+        null=True,
+        blank=True,
+    )
+    partner_photo_evidence = models.ImageField(
+        verbose_name="Partner Evidence",
+        upload_to="partner_evidence/",
+        validators=[validate_file_size],
+        storage=PrivateMediaStorage(),
+        null=True,
+        blank=True,
+    )
     date_time = models.DateTimeField(verbose_name="Date")
     time = models.TimeField(verbose_name="Type",
                             help_text='Workout/Gift',
@@ -453,7 +468,7 @@ class PartnerWorkoutForm(ModelForm):
     
     class Meta:
         model = Workout
-        fields = ['distance', 'date_time', 'photo_evidence', 'partner_profile']
+        fields = ['distance', 'date_time', 'photo_evidence', 'partner_selfie', 'partner_profile']
         widgets = {
             'date_time': DateTimePickerInput(),
         }
@@ -514,7 +529,7 @@ class FSPartnerWorkoutForm(ModelForm):
     
     class Meta:
         model = Workout
-        fields = ['date_time', 'time', 'sport', 'intensity', 'photo_evidence', 'partner_profile']
+        fields = ['date_time', 'time', 'sport', 'intensity', 'photo_evidence', 'partner_selfie', 'partner_profile']
         widgets = {
             'date_time': DateTimePickerInput(),
             'time': TimePickerInput(options={
@@ -549,6 +564,22 @@ class FSPartnerWorkoutForm(ModelForm):
                 raise forms.ValidationError(message)
         
         return cleaned_data
+
+
+class PartnerWorkoutConfirmationForm(forms.Form):
+    partner_photo_evidence = forms.ImageField(
+        label="Your workout evidence",
+        validators=[validate_file_size],
+    )
+    partner_selfie = forms.ImageField(
+        label="Selfie with your partner",
+        required=False,
+        validators=[validate_file_size],
+    )
+
+    def __init__(self, *args, require_selfie=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["partner_selfie"].required = require_selfie
 
 class WorkoutSerializer(serializers.HyperlinkedModelSerializer):
     belongs_to = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -1044,12 +1075,13 @@ def delete_workout(sender, instance, **kwargs):
     
     profile.save()
 
-    # Delete image from S3
-    try:
-        default_storage.delete(instance.photo_evidence.name)
-    except Exception:
-        q("Can't delete the file {} in S3".format(
-            instance.photo_evidence.name))
+    for field_name in ("photo_evidence", "partner_selfie", "partner_photo_evidence"):
+        evidence = getattr(instance, field_name)
+        if evidence:
+            try:
+                evidence.storage.delete(evidence.name)
+            except Exception:
+                q("Can't delete the file {}".format(evidence.name))
 
 
 @receiver(post_save, sender=Workout)
