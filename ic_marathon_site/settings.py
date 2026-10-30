@@ -62,6 +62,7 @@ THIRD_PARTY_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.strava",
+    "allauth.socialaccount.providers.amazon_cognito",
     "storages",
     "widget_tweaks",
     "rest_framework",
