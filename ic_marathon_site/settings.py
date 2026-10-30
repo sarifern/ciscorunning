@@ -159,21 +159,13 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 LOGIN_REDIRECT_URL = "home"
 CACHES = {
     "default": {
-        "BACKEND": "django_bmemcached.memcached.BMemcached",
-        "LOCATION": os.environ.get("MEMCACHEDCLOUD_SERVERS").split(","),
-        "OPTIONS": {
-            "username": os.environ.get("MEMCACHEDCLOUD_USERNAME"),
-            "password": os.environ.get("MEMCACHEDCLOUD_PASSWORD"),
-        },
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache_table",
     },
     "select2": {
-        "BACKEND": "django_bmemcached.memcached.BMemcached",
-        "LOCATION": os.environ.get("MEMCACHEDCLOUD_SERVERS").split(","),
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "select2_cache_table",
         "TIMEOUT": 60 * 60 * 24,
-        "OPTIONS": {
-            "username": os.environ.get("MEMCACHEDCLOUD_USERNAME"),
-            "password": os.environ.get("MEMCACHEDCLOUD_PASSWORD"),
-        },
     },
 }
 

@@ -16,10 +16,6 @@ services:
   repo: https://github.com/sarifern/ciscorunning
   plan: free
   envVars:
-  - key: MEMCACHEDCLOUD_PASSWORD
-    sync: false
-  - key: MEMCACHEDCLOUD_USERNAME
-    sync: false
   - key: POSTGRES_HOST
     fromDatabase:
       name: ciscorunningbeta
@@ -38,8 +34,6 @@ services:
     sync: false
   - key: DJANGO_SECRET_KEY
     generateValue: true
-  - key: MEMCACHEDCLOUD_SERVERS
-    sync: false
   - key: CECS_WHO_JOINED
     value: sarifern
   - key: DEBUG_PREF
