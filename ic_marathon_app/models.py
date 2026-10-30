@@ -237,7 +237,7 @@ class Workout(models.Model):
                             default=uuid.uuid4,
                             editable=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    edition = models.IntegerField(default=2025)
+    edition = models.IntegerField(default=2026)
     distance = models.DecimalField(verbose_name="KM",
                                    default=0.00,
                                    max_digits=5,

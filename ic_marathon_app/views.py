@@ -20,10 +20,10 @@ import uuid
 
 WTAPI = WebexTeamsAPI(access_token=os.environ.get("WT_TOKEN"))
 
-DATE_START = datetime(2025, 12, 12, 1, 0, 0).replace(
+DATE_START = datetime(2026, 12, 11, 0, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
-DATE_END = datetime(2026, 1, 8, 0, 0, 0).replace(
+DATE_END = datetime(2027, 1, 7, 0, 0, 0).replace(
     tzinfo=tz.timezone("America/Mexico_City")
 )
 
@@ -40,7 +40,7 @@ def is_challenge_active():
     current_date = datetime.now().replace(tzinfo=tz.timezone("America/Mexico_City"))
     if os.environ.get("DEBUG_PREF") == "True":
         # this is on BETA bypass
-        current_date = datetime(2025, 12, 15, 0, 0, 0).replace(
+        current_date = datetime(2026, 12, 15, 0, 0, 0).replace(
             tzinfo=tz.timezone("America/Mexico_City")
         )
     return current_date >= DATE_START and current_date <= DATE_END
@@ -52,7 +52,7 @@ def home(request):
     DATE = datetime.now().replace(tzinfo=tz.timezone("America/Mexico_City"))
     if os.environ.get("DEBUG_PREF") == "True":
         # this is on BETA bypass
-        DATE = datetime(2025, 12, 15, 0, 0, 0).replace(
+        DATE = datetime(2026, 12, 15, 0, 0, 0).replace(
             tzinfo=tz.timezone("America/Mexico_City")
         )
     ACTIVE = is_challenge_active()
