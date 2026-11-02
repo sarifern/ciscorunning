@@ -1,5 +1,6 @@
 from io import BytesIO
 
+from allauth.core import context as allauth_context
 from allauth.socialaccount.adapter import get_adapter as get_socialaccount_adapter
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.models import SocialApp
@@ -7,7 +8,7 @@ from allauth.socialaccount.models import SocialLogin
 from django.contrib.auth.models import User
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
@@ -154,6 +155,56 @@ class CiscoExistingUserSyncTests(TestCase):
 		user.refresh_from_db()
 
 		self.assertEqual(user.username, "unchanged")
+
+
+class CiscoExistingUserLinkTests(TestCase):
+	def setUp(self):
+		SocialApp.objects.create(
+			provider="openid_connect",
+			provider_id="Cisco",
+			name="Cisco",
+			client_id="test-client",
+			secret="test-secret",
+			settings={"server_url": "https://example.test/oidc"},
+		)
+
+	def _lookup_cisco_login(self):
+		request = RequestFactory().get("/")
+		with allauth_context.request_context(request):
+			provider = SocialAccount(provider="Cisco").get_provider(request)
+			sociallogin = provider.sociallogin_from_response(request, CISCO_CLAIMS)
+			sociallogin.lookup()
+		return sociallogin
+
+	def test_verified_cisco_email_links_existing_user_without_signup(self):
+		user = User.objects.create_user(
+			username=CISCO_CLAIMS["uid"],
+			email=CISCO_CLAIMS["email"],
+		)
+		sociallogin = self._lookup_cisco_login()
+
+		self.assertTrue(sociallogin.is_existing)
+		self.assertEqual(sociallogin.user, user)
+		self.assertTrue(sociallogin.email_addresses[0].verified)
+		self.assertTrue(
+			SocialAccount.objects.filter(
+				user=user,
+				provider="Cisco",
+				uid=CISCO_CLAIMS["sub"],
+			).exists()
+		)
+
+	def test_unmatched_cisco_email_does_not_link_an_existing_user(self):
+		User.objects.create_user(
+			username="someone-else",
+			email="someone-else@cisco.com",
+		)
+		sociallogin = self._lookup_cisco_login()
+
+		self.assertFalse(sociallogin.is_existing)
+		self.assertFalse(
+			SocialAccount.objects.filter(uid=CISCO_CLAIMS["sub"]).exists()
+		)
 
 
 class CiscoOnlyAuthenticationTests(TestCase):

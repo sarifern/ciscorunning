@@ -179,9 +179,14 @@ if CISCO_OIDC_CLIENT_ID:
 SOCIALACCOUNT_PROVIDERS = {
     "openid_connect": {
         "APPS": CISCO_OIDC_APPS,
+        # Cisco is the only configured OIDC provider. Trust its corporate
+        # email claim so existing users are linked instead of sent to signup.
+        "VERIFIED_EMAIL": True,
+        "EMAIL_AUTHENTICATION": True,
         "SCOPE": ["openid", "profile", "email"],
     }
 }
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 LOGIN_REDIRECT_URL = "home"
 CACHES = {

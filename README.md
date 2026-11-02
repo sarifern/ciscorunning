@@ -120,7 +120,9 @@ of `Cisco` must be registered with Cisco using these exact URLs:
 
 Claims are mapped as `uid` → username, `email` → email,
 `given_name` → first name, `family_name` → last name, and `sub` → the stable
-social account ID.
+social account ID. On the first Cisco login, a verified Cisco email matching
+an existing user automatically connects the Cisco identity to that user; the
+intermediate social-account signup form is not shown.
 
 ---
 
