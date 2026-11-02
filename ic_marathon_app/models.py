@@ -30,6 +30,11 @@ CATEGORY_CHOICES = ((BEGINNERRUNNER, 'Beginner Runner'),
                     (RUNNER, 'Advanced Runner'),
                     (FREESTYLER, 'Advanced Freestyler'),
                     (BEGINNERFREESTYLER, 'Beginner Freestyler'))
+AVATAR_CDN_URL = "https://api.dicebear.com/9.x/bottts/svg?seed=ciscorunning-{}"
+
+
+def cute_avatar_url(user_id):
+    return AVATAR_CDN_URL.format(user_id)
 
 
 class Sport(models.Model):
@@ -78,7 +83,7 @@ class Profile(models.Model):
                                    max_digits=10,
                                    decimal_places=2,
                                    validators=[validate_min_goal])
-    avatar = models.CharField(max_length=400, blank=True, default="https://ciscorunning2023.s3.us-east-1.amazonaws.com/static/img/user.png")
+    avatar = models.CharField(max_length=400, blank=True, default="")
     cec = models.CharField(max_length=30, blank=True, validators=[validate_cec])
     distance = models.DecimalField(default=0.00,
                                    max_digits=10,
@@ -97,6 +102,13 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.cec
+
+    def save(self, *args, **kwargs):
+        if not self.avatar and self.user_id:
+            self.avatar = cute_avatar_url(self.user_id)
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {"avatar"}
+        super().save(*args, **kwargs)
     
     def get_parent_category(self):
         """

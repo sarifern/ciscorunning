@@ -90,7 +90,7 @@ The Cisco Running Challenge is a gamified fitness competition where participants
 - **Cisco OAuth 2.0**: The only end-user login and signup method
 - **Profile Sync**: Automatic profile data from Cisco claims
 - **Secure**: Token-based authentication
-- **Avatar Support**: AWS S3 storage for profile pictures
+- **Avatars**: Stable, randomly styled DiceBear robots served from its CDN
 
 #### Cisco OpenID Connect configuration
 

@@ -43,7 +43,8 @@
 
             <nav class="col-lg-3 col-xl-2 sidebar sidebar--primary hidden-md-down" role="navigation">
                 <div class="base-margin">
-                    <div class="flex flex-center flex-middle"><img class="w3-round w3-image" src={{user.profile.avatar}}
+                    <div class="flex flex-center flex-middle"><img class="w3-round w3-image"
+                            src="{{ user.profile.avatar }}" alt="" referrerpolicy="no-referrer"
                             style="width:50%"></div>
                     <div class="flex flex-center flex-middle half-padding-top">
                         {% if user.first_name and user.last_name %}

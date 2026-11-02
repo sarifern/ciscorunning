@@ -16,6 +16,8 @@ from .models import (
 	FSPartnerWorkoutForm,
 	PartnerWorkoutConfirmationForm,
 	PartnerWorkoutForm,
+	Profile,
+	cute_avatar_url,
 )
 from .signals import sync_cisco_user
 from .social_adapters import CiscoAccountAdapter, CiscoSocialAccountAdapter
@@ -68,6 +70,28 @@ class PartnerWorkoutEvidenceFormTests(SimpleTestCase):
 		self.assertFalse(required_form.is_valid())
 		self.assertIn("partner_selfie", required_form.errors)
 		self.assertTrue(optional_form.is_valid(), optional_form.errors)
+
+
+class ProfileAvatarTests(TestCase):
+	def test_new_profile_gets_stable_cute_avatar(self):
+		user = User.objects.create_user(username="avatar-user")
+
+		profile = Profile.objects.create(user=user)
+		profile.save()
+		profile.refresh_from_db()
+
+		self.assertEqual(profile.avatar, cute_avatar_url(user.pk))
+		self.assertNotIn(user.username, profile.avatar)
+
+	def test_custom_avatar_is_preserved(self):
+		user = User.objects.create_user(username="custom-avatar-user")
+		custom_avatar = "https://cdn.example.com/custom.png"
+
+		profile = Profile.objects.create(user=user, avatar=custom_avatar)
+		profile.save()
+		profile.refresh_from_db()
+
+		self.assertEqual(profile.avatar, custom_avatar)
 
 
 class CiscoSocialAccountAdapterTests(SimpleTestCase):

@@ -26,7 +26,11 @@ class ProfileTable(tables.Table):
         return format_html(awards_html)
 
     def render_avatar(self, value, record):
-        return format_html('<img src="{}" height="42" width="42"/>', value)
+        return format_html(
+            '<img src="{}" height="42" width="42" alt="" '
+            'loading="lazy" referrerpolicy="no-referrer"/>',
+            value,
+        )
 
     class Meta:
         model = Profile

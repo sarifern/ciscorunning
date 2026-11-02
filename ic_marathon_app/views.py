@@ -1,4 +1,3 @@
-from allauth.socialaccount.models import SocialAccount
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from .models import ProfileForm, Profile, SportIntensityMapping, Workout, WorkoutForm, FSWorkoutForm, PartnerWorkoutConfirmationForm
@@ -62,18 +61,7 @@ def home(request):
         else:
             return profile_wizard(request)
     except ObjectDoesNotExist:
-        try:
-            account_picture = SocialAccount.objects.get(
-                user=request.user
-            ).extra_data.get(
-                "profile",
-                "https://ciscorunning2023.s3.us-east-1.amazonaws.com/static/img/user.png",
-            )
-        except ObjectDoesNotExist:
-            account_picture = "https://ciscorunning2023.s3.us-east-1.amazonaws.com/static/img/user.png"
         profile = Profile.objects.get_or_create(user=request.user)[0]
-        profile.avatar = account_picture
-        profile.save()
         request.user.profile = profile
         request.user.save()
         return profile_wizard(request)
