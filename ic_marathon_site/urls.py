@@ -15,10 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
 from ic_marathon_app import views
-from ic_marathon_app import auth_views as ic_auth_views
-from ic_marathon_app import social_providers
 from rest_framework import routers
 from ic_marathon_app import models
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
@@ -35,10 +32,6 @@ urlpatterns = [
     
     # API Routes
     path('api/', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls')),
-    
-    # API Authentication
-    path('api/auth/strava/', ic_auth_views.strava_token_auth, name='strava-token-auth'),
     
     # API Documentation (Swagger UI - Modern, interactive API docs)
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -64,8 +57,6 @@ urlpatterns = [
     path("leaderboard/", views.leaderboard, name="leaderboard"),
     path("api/sport-intensity-mappings/", views.get_sport_intensity_mappings, name="sport_intensity_mappings"),
 
-    path('accounts/strava/login/', social_providers.oauth2_login, name='strava_login'),
-    path('accounts/strava/login/callback/', social_providers.oauth2_callback, name='strava_callback'),
     path('accounts/', include('allauth.urls')),
     path('select2/', include('django_select2.urls')),
     path('badges/',include('badgify.urls')),

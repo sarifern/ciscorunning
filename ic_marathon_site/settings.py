@@ -60,7 +60,6 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.openid_connect",
     "storages",
     "widget_tweaks",
@@ -148,13 +147,41 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
-    # `allauth` specific authentication methods, such as login by email
+    # Cisco OpenID Connect is the only end-user authentication method.
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 SITE_ID = 1
 
 ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_ADAPTER = "ic_marathon_app.social_adapters.CiscoAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "ic_marathon_app.social_adapters.CiscoSocialAccountAdapter"
+
+# The Cisco OIDC app is configured either in the Django admin (SocialApp) or
+# through these environment variables - never both, because allauth raises
+# MultipleObjectsReturned when two apps match the same provider.
+CISCO_OIDC_PROVIDER_ID = os.environ.get("CISCO_OIDC_PROVIDER_ID", "cisco")
+CISCO_OIDC_CLIENT_ID = os.environ.get("CISCO_OIDC_CLIENT_ID", "")
+CISCO_OIDC_APPS = []
+if CISCO_OIDC_CLIENT_ID:
+    CISCO_OIDC_APPS.append(
+        {
+            "provider_id": CISCO_OIDC_PROVIDER_ID,
+            "name": "Cisco",
+            "client_id": CISCO_OIDC_CLIENT_ID,
+            "secret": os.environ.get("CISCO_OIDC_CLIENT_SECRET", ""),
+            "settings": {
+                "server_url": os.environ.get("CISCO_OIDC_SERVER_URL", ""),
+            },
+        }
+    )
+
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": CISCO_OIDC_APPS,
+        "SCOPE": ["openid", "profile", "email"],
+    }
+}
 
 LOGIN_REDIRECT_URL = "home"
 CACHES = {

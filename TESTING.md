@@ -32,39 +32,29 @@ This document provides comprehensive testing procedures for both **end users** a
 
 ### 1. Registration & Authentication
 
-#### Test Case 1.1: Strava OAuth Flow
-**Objective:** Verify user can authenticate via Strava
+#### Test Case 1.1: Cisco OAuth 2.0 Flow
+**Objective:** Verify user can authenticate via Cisco OpenID Connect
 
 **Steps:**
 1. Navigate to application home page
-2. Click "Login with Strava" button
-3. Authorize application on Strava (if first time)
+2. Click "Login with Cisco" button
+3. Authorize application with Cisco (if first time)
 4. Get redirected back to application
 
 **Expected Outcome:**
-- ✅ Redirected to Strava authorization page
-- ✅ Permission scopes clearly displayed (activity:read_all)
+- ✅ Redirected to Cisco authorization page
+- ✅ OpenID Connect scopes clearly displayed
 - ✅ After authorization, redirected back to application
 - ✅ User is logged in
-- ✅ Username matches Strava username
-
-**API Test:**
-```bash
-# Step 1: Get Strava token (manual via OAuth flow)
-
-# Step 2: Authenticate with backend
-curl -X POST https://ciscorunning.herokuapp.com/api/auth/strava/ \
-  -H "Content-Type: application/json" \
-  -d '{"strava_access_token": "YOUR_STRAVA_TOKEN"}'
-
-# Expected: {"token": "abc123...", "user": "username"}
-```
+- ✅ Username matches the Cisco `uid` claim
+- ✅ Email matches the Cisco `email` claim
+- ✅ First and last names match `given_name` and `family_name`
 
 #### Test Case 1.2: Session Persistence
 **Objective:** Verify user stays logged in across page refreshes
 
 **Steps:**
-1. Log in via Strava
+1. Log in via Cisco
 2. Refresh page
 3. Navigate to different page
 4. Close browser and reopen
@@ -1291,13 +1281,15 @@ heroku releases -a ciscorunning
 
 ### API Test Case 1: Authentication
 ```bash
-# Test Strava OAuth authentication
-curl -X POST https://ciscorunning.herokuapp.com/api/auth/strava/ \
-  -H "Content-Type: application/json" \
-  -d '{"strava_access_token": "test_token"}'
+# Test Cisco OAuth authentication through the browser
+# 1. Open /accounts/Cisco/login/
+# 2. Complete Cisco authorization
+# 3. Confirm the callback creates/logs in the expected user
 ```
 
-**Expected:** 200 OK with `{"token": "...", "user": "username"}`
+**Expected:** Cisco redirects back successfully and the user has:
+`username=uid`, `email=email`, `first_name=given_name`, and
+`last_name=family_name`.
 
 ### API Test Case 2: Create Profile
 ```bash
@@ -1442,7 +1434,7 @@ curl -X POST https://ciscorunning.herokuapp.com/api/profiles/me/ \
 ## 📋 Test Summary Checklist
 
 ### User Testing
-- [ ] Strava OAuth authentication works
+- [ ] Cisco OAuth authentication works
 - [ ] Profile creation and management
 - [ ] Solo workout submission (running & freestyle)
 - [ ] Partner workout request and confirmation

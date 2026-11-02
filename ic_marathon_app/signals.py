@@ -1,34 +1,33 @@
-# from django.db.models.signals import post_delete, post_save
-# from django.dispatch import receiver
-# from .models import Workout
-# from django.core.files.storage import default_storage
-# import q
+from allauth.socialaccount.signals import pre_social_login
+from django.dispatch import receiver
+
+from .social_adapters import _name_claims, is_cisco_login
 
 
-# @receiver(post_delete, sender=Workout)
-# def delete_workout(sender, instance, **kwargs):
-#     # update personal distance
-#     profile = instance.belongs_to
-#     profile.distance -= instance.distance
+@receiver(pre_social_login)
+def sync_cisco_user(request, sociallogin, **kwargs):
+    """Keep an existing Cisco user's local fields aligned with OIDC claims."""
+    if not is_cisco_login(sociallogin) or not sociallogin.user.pk:
+        return
 
-#     if profile.distance < profile.user_goal_km:
-#         profile.user_goal = False
-#     profile.save()
+    claims = sociallogin.account.extra_data
+    if not isinstance(claims, dict):
+        return
 
-#     # delete image from S3
-#     try:
-#         default_storage.delete(instance.photo_evidence.name)
-#     except Exception:
-#         q("Can't delete the file {} in S3".format(instance.photo_evidence.name))
+    user = sociallogin.user
+    first_name, last_name = _name_claims(claims)
+    values = {
+        "username": claims.get("uid") or claims.get("user"),
+        "email": claims.get("email"),
+        "first_name": first_name,
+        "last_name": last_name,
+    }
 
+    changed_fields = []
+    for field, value in values.items():
+        if value and getattr(user, field) != value:
+            setattr(user, field, str(value))
+            changed_fields.append(field)
 
-# @receiver(post_save, sender=Workout)
-# def save_workout(sender, instance, **kwargs):
-#     # update personal distance
-#     profile = instance.belongs_to
-#     profile.distance += instance.distance
-#     if profile.distance >= 84.0 and profile.category == "beginnerrunner":
-#         profile.category = "runner"
-#     if profile.distance >= profile.user_goal_km:
-#         profile.user_goal = True
-#     profile.save()
+    if changed_fields:
+        user.save(update_fields=changed_fields)

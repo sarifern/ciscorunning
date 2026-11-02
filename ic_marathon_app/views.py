@@ -815,6 +815,7 @@ def profile_wizard(request):
     if request.method == "POST":
         form = ProfileForm(request.POST, instance=profile)
         if form.is_valid():
+            profile.cec = request.user.username
             form.save()
             wtFlag = False
             wtParticipantFlag = False

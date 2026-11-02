@@ -87,10 +87,40 @@ The Cisco Running Challenge is a gamified fitness competition where participants
 
 ###  Authentication
 
-- **Strava OAuth**: Login with your Strava account
-- **Profile Sync**: Automatic profile data from Strava
+- **Cisco OAuth 2.0**: The only end-user login and signup method
+- **Profile Sync**: Automatic profile data from Cisco claims
 - **Secure**: Token-based authentication
 - **Avatar Support**: AWS S3 storage for profile pictures
+
+#### Cisco OpenID Connect configuration
+
+Configure the Cisco app in **either** the Django admin **or** environment
+variables - never both, because allauth raises `MultipleObjectsReturned` when
+two apps match the same provider.
+
+Django admin (`Social applications`):
+
+| Field | Value |
+|-------|-------|
+| Provider | OpenID Connect |
+| Provider ID | `Cisco` |
+| Name | `Cisco` |
+| Client id / Secret | Issued by Cisco |
+| Settings | `{"server_url": "https://sso-<id>.sso.duosecurity.com/oidc/<client-id>"}` |
+
+Environment variables (`CISCO_OIDC_PROVIDER_ID`, `CISCO_OIDC_CLIENT_ID`,
+`CISCO_OIDC_CLIENT_SECRET`, `CISCO_OIDC_SERVER_URL`) are only used when
+`CISCO_OIDC_CLIENT_ID` is set.
+
+The provider ID appears in the URLs and is **case-sensitive**, so a provider ID
+of `Cisco` must be registered with Cisco using these exact URLs:
+
+- Login: `/accounts/Cisco/login/`
+- Redirect URI: `https://<your-domain>/accounts/Cisco/login/callback/`
+
+Claims are mapped as `uid` → username, `email` → email,
+`given_name` → first name, `family_name` → last name, and `sub` → the stable
+social account ID.
 
 ---
 
@@ -110,7 +140,7 @@ The Cisco Running Challenge is a gamified fitness competition where participants
    Views & Templates (ic_marathon_app/views.py)         
    Forms & Validation                                    
    Django Admin Interface                                
-   Strava OAuth Integration                              
+   Cisco OAuth 2.0 Integration
    Badge System (django-badgify)                         
    Automatic Category Management                         
 
@@ -140,7 +170,7 @@ The Cisco Running Challenge is a gamified fitness competition where participants
 - **Backend**: Django 4.2.7
 - **Database**: PostgreSQL (Heroku Postgres)
 - **Storage**: AWS S3 (us-east-2 region)
-- **Authentication**: Django-allauth with Strava OAuth
+- **Authentication**: Django-allauth with Cisco OpenID Connect
 - **Badge System**: django-badgify
 - **Tables**: django-tables2
 - **Forms**: django-crispy-forms, django-bootstrap4
