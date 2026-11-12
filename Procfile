@@ -1,1 +1,1 @@
-web: gunicorn ic_marathon_site.wsgi --log-file -
+web: gunicorn ic_marathon_site.wsgi --log-file - --timeout 60
