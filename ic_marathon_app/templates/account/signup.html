@@ -44,6 +44,10 @@ Sign up
   <div class="mb-4">
     {% if field.name == "email" %}
     <label class="text-xs font-semibold" for="{{ field.id_for_label }}">Cisco email address</label>
+    {% elif field.name == "first_name" %}
+    <label class="text-xs font-semibold" for="{{ field.id_for_label }}">First name</label>
+    {% elif field.name == "last_name" %}
+    <label class="text-xs font-semibold" for="{{ field.id_for_label }}">Last name</label>
     {% else %}
     {{ field|add_label_class:"font-semibold text-xs" }}
     {% endif %}

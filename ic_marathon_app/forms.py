@@ -20,6 +20,23 @@ class CiscoSignupForm(SignupForm):
     error.
     """
 
+    first_name = None
+    last_name = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['first_name'] = self.fields.get('first_name', None) or self._create_char_field('First name')
+        self.fields['last_name'] = self.fields.get('last_name', None) or self._create_char_field('Last name')
+
+    def _create_char_field(self, label):
+        from django import forms
+        return forms.CharField(
+            label=label,
+            required=True,
+            max_length=30,
+            widget=forms.TextInput(attrs={'autocomplete': 'name'})
+        )
+
     def clean_email(self):
         email = super().clean_email()
         cec = cec_from_email(email)
@@ -31,3 +48,10 @@ class CiscoSignupForm(SignupForm):
                 "on a device without DUO."
             )
         return email
+
+    def save(self, request):
+        user = super().save(request)
+        user.first_name = self.cleaned_data.get('first_name', '')
+        user.last_name = self.cleaned_data.get('last_name', '')
+        user.save()
+        return user
