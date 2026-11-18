@@ -1,17 +1,17 @@
 from io import BytesIO
 
-from allauth.core import context as allauth_context
-from allauth.socialaccount.adapter import get_adapter as get_socialaccount_adapter
-from allauth.socialaccount.models import SocialAccount
-from allauth.socialaccount.models import SocialApp
-from allauth.socialaccount.models import SocialLogin
+import re
+
+from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
-from django.core.exceptions import MultipleObjectsReturned
+from django.core import mail
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 
+from .forms import CiscoSignupForm
 from .models import (
 	FSPartnerWorkoutForm,
 	PartnerWorkoutConfirmationForm,
@@ -94,222 +94,211 @@ class ProfileAvatarTests(TestCase):
 		self.assertEqual(profile.avatar, custom_avatar)
 
 
-class CiscoSocialAccountAdapterTests(SimpleTestCase):
-	def test_populate_user_maps_cisco_claims_to_django_fields(self):
-		sociallogin = SocialLogin(
-			user=User(),
-			account=SocialAccount(
-				provider="Cisco",
-				uid=CISCO_CLAIMS["sub"],
-				extra_data=CISCO_CLAIMS,
-			)
-		)
+class CiscoLocalSignupAdapterTests(TestCase):
+	"""The CEC is derived from the Cisco email, never typed by the user."""
 
-		user = CiscoSocialAccountAdapter().populate_user(None, sociallogin, {})
-
-		self.assertEqual(sociallogin.account.uid, CISCO_CLAIMS["sub"])
-		self.assertEqual(user.username, CISCO_CLAIMS["uid"])
-		self.assertEqual(user.email, CISCO_CLAIMS["email"])
-		self.assertEqual(user.first_name, CISCO_CLAIMS["given_name"])
-		self.assertEqual(user.last_name, CISCO_CLAIMS["family_name"])
-
-	def test_only_cisco_social_accounts_can_sign_up(self):
-		adapter = CiscoSocialAccountAdapter()
-		foreign_login = SocialLogin(account=SocialAccount(provider="strava"))
-
-		for provider_id in ("Cisco", "cisco", "openid_connect"):
-			with self.subTest(provider=provider_id):
-				cisco_login = SocialLogin(account=SocialAccount(provider=provider_id))
-				self.assertTrue(adapter.is_open_for_signup(None, cisco_login))
-
-		self.assertFalse(adapter.is_open_for_signup(None, foreign_login))
-
-	def test_local_account_signup_and_authentication_are_disabled(self):
-		adapter = CiscoAccountAdapter()
-
-		self.assertFalse(adapter.is_open_for_signup(None))
-		self.assertIsNone(
-			adapter.authenticate(
-				None,
-				username=CISCO_CLAIMS["uid"],
-				password="not-used",
-			)
-		)
-
-
-class CiscoExistingUserSyncTests(TestCase):
-	def test_existing_cisco_user_is_updated_from_current_claims(self):
-		user = User.objects.create_user(
-			username="old-username",
-			email="old-email@example.com",
-			first_name="Old",
-			last_name="Name",
-		)
-		sociallogin = SocialLogin(
-			user=user,
-			account=SocialAccount(
-				user=user,
-				provider="Cisco",
-				uid=CISCO_CLAIMS["sub"],
-				extra_data=CISCO_CLAIMS,
-			),
-		)
-
-		sync_cisco_user(None, sociallogin)
-		user.refresh_from_db()
-
-		self.assertEqual(user.username, CISCO_CLAIMS["uid"])
-		self.assertEqual(user.email, CISCO_CLAIMS["email"])
-		self.assertEqual(user.first_name, CISCO_CLAIMS["given_name"])
-		self.assertEqual(user.last_name, CISCO_CLAIMS["family_name"])
-
-	def test_non_cisco_account_does_not_update_user(self):
-		user = User.objects.create_user(username="unchanged")
-		sociallogin = SocialLogin(
-			user=user,
-			account=SocialAccount(
-				user=user,
-				provider="strava",
-				uid=CISCO_CLAIMS["sub"],
-				extra_data=CISCO_CLAIMS,
-			),
-		)
-
-		sync_cisco_user(None, sociallogin)
-		user.refresh_from_db()
-
-		self.assertEqual(user.username, "unchanged")
-
-
-class CiscoExistingUserLinkTests(TestCase):
 	def setUp(self):
-		SocialApp.objects.create(
-			provider="openid_connect",
-			provider_id="Cisco",
-			name="Cisco",
-			client_id="test-client",
-			secret="test-secret",
-			settings={"server_url": "https://example.test/oidc"},
+		self.adapter = CiscoAccountAdapter()
+
+	def test_local_signup_is_open(self):
+		self.assertTrue(self.adapter.is_open_for_signup(None))
+
+	def test_cisco_email_is_normalised(self):
+		self.assertEqual(
+			self.adapter.clean_email("  SariFern@Cisco.com  "),
+			"sarifern@cisco.com",
 		)
 
-	def _lookup_cisco_login(self):
-		request = RequestFactory().get("/")
-		with allauth_context.request_context(request):
-			provider = SocialAccount(provider="Cisco").get_provider(request)
-			sociallogin = provider.sociallogin_from_response(request, CISCO_CLAIMS)
-			sociallogin.lookup()
-		return sociallogin
+	def test_non_cisco_email_is_rejected(self):
+		for email in ("sarifern@gmail.com", "sarifern@cisco.com.evil.com", "sarifern"):
+			with self.subTest(email=email):
+				with self.assertRaises(ValidationError):
+					self.adapter.clean_email(email)
 
-	def test_verified_cisco_email_links_existing_user_without_signup(self):
-		user = User.objects.create_user(
-			username=CISCO_CLAIMS["uid"],
-			email=CISCO_CLAIMS["email"],
-		)
-		sociallogin = self._lookup_cisco_login()
+	def test_employee_number_is_rejected(self):
+		with self.assertRaises(ValidationError):
+			self.adapter.clean_email("123456@cisco.com")
 
-		self.assertTrue(sociallogin.is_existing)
-		self.assertEqual(sociallogin.user, user)
-		self.assertTrue(sociallogin.email_addresses[0].verified)
-		self.assertTrue(
-			SocialAccount.objects.filter(
-				user=user,
-				provider="Cisco",
-				uid=CISCO_CLAIMS["sub"],
-			).exists()
+	def test_existing_cec_is_rejected(self):
+		User.objects.create_user(username="sarifern")
+
+		form = CiscoSignupForm(
+			{
+				"email": "SariFern@cisco.com",
+				"password1": PASSWORD,
+				"password2": PASSWORD,
+			}
 		)
 
-	def test_unmatched_cisco_email_does_not_link_an_existing_user(self):
-		User.objects.create_user(
-			username="someone-else",
-			email="someone-else@cisco.com",
-		)
-		sociallogin = self._lookup_cisco_login()
+		self.assertFalse(form.is_valid())
+		self.assertIn("email", form.errors)
 
-		self.assertFalse(sociallogin.is_existing)
-		self.assertFalse(
-			SocialAccount.objects.filter(uid=CISCO_CLAIMS["sub"]).exists()
+	def test_adapter_does_not_reject_an_existing_cec(self):
+		"""clean_email is shared with password reset, where the user exists."""
+		User.objects.create_user(username="sarifern")
+
+		self.assertEqual(
+			self.adapter.clean_email("sarifern@cisco.com"),
+			"sarifern@cisco.com",
 		)
 
+	def test_username_is_derived_from_the_cisco_email(self):
+		user = User(email="sarifern@cisco.com")
 
-class CiscoOnlyAuthenticationTests(TestCase):
-	def test_allauth_password_login_rejects_valid_local_credentials(self):
-		user = User.objects.create_user(
-			username="local-user",
-			email="local-user@example.com",
-			password="valid-local-password",
+		self.adapter.populate_username(None, user)
+
+		self.assertEqual(user.username, "sarifern")
+
+	def test_sso_supplied_username_is_left_alone(self):
+		"""Social signup calls populate_username after setting the uid."""
+		user = User(username="sarifern", email="sari.fernandez@cisco.com")
+
+		self.adapter.populate_username(None, user)
+
+		self.assertEqual(user.username, "sarifern")
+
+
+PASSWORD = "a-strong-passphrase-42"
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class CiscoLocalSignupFlowTests(TestCase):
+	"""End-to-end signup for users whose device is not enrolled in DUO."""
+
+	def _signup(self, email=" SariFern@Cisco.com "):
+		return self.client.post(
+			reverse("account_signup"),
+			{"email": email, "password1": PASSWORD, "password2": PASSWORD},
 		)
+
+	def test_signup_creates_a_user_whose_username_is_the_cec(self):
+		self._signup()
+
+		user = User.objects.get(email="sarifern@cisco.com")
+		self.assertEqual(user.username, "sarifern")
+
+	def test_signup_sends_a_confirmation_email(self):
+		self._signup()
+
+		self.assertEqual(len(mail.outbox), 1)
+		self.assertEqual(mail.outbox[0].to, ["sarifern@cisco.com"])
+
+	def test_signup_rejects_a_non_cisco_email(self):
+		self._signup(email="sarifern@gmail.com")
+
+		self.assertFalse(User.objects.filter(email="sarifern@gmail.com").exists())
+
+	def test_unconfirmed_signup_cannot_log_in(self):
+		self._signup()
+		self.client.logout()
 
 		self.client.post(
 			reverse("account_login"),
-			{
-				"login": user.username,
-				"password": "valid-local-password",
-			},
+			{"login": "sarifern", "password": PASSWORD},
 		)
 
 		self.assertNotIn("_auth_user_id", self.client.session)
 
-	def test_allauth_local_signup_does_not_create_user(self):
-		self.client.post(
-			reverse("account_signup"),
+	def test_confirmed_user_logs_in_with_cec_or_cisco_email(self):
+		user = User.objects.create_user(
+			username="sarifern",
+			email="sarifern@cisco.com",
+			password=PASSWORD,
+		)
+		EmailAddress.objects.create(
+			user=user,
+			email=user.email,
+			verified=True,
+			primary=True,
+		)
+
+		for login_value in ("sarifern", "sarifern@cisco.com"):
+			with self.subTest(login=login_value):
+				self.client.logout()
+
+				self.client.post(
+					reverse("account_login"),
+					{"login": login_value, "password": PASSWORD},
+				)
+
+				self.assertEqual(
+					self.client.session.get("_auth_user_id"),
+					str(user.pk),
+				)
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class SsoUserPasswordResetTests(TestCase):
+	"""An SSO user needs a password to sign in from a device without DUO.
+
+	They cannot sign up again (the CEC is taken), so the reset flow is the
+	self-serve route. SSO accounts have an unusable password, which must not
+	stop the reset email from being sent.
+	"""
+
+	def setUp(self):
+		self.user = User.objects.create_user(
+			username="ssouser",
+			email="ssouser@cisco.com",
+		)
+		self.user.set_unusable_password()
+		self.user.save()
+		EmailAddress.objects.create(
+			user=self.user,
+			email=self.user.email,
+			verified=True,
+			primary=True,
+		)
+
+	def test_signup_points_an_existing_cec_at_the_reset_flow(self):
+		form = CiscoSignupForm(
 			{
-				"username": "local-signup",
-				"email": "local-signup@example.com",
-				"password1": "not-a-real-password-123",
-				"password2": "not-a-real-password-123",
-			},
-		)
-
-		self.assertFalse(User.objects.filter(username="local-signup").exists())
-
-
-class CiscoProviderConfigurationTests(TestCase):
-	"""Guard the admin-configured Cisco app against duplicate/missing app errors."""
-
-	def _create_admin_configured_app(self):
-		return SocialApp.objects.create(
-			provider="openid_connect",
-			provider_id="Cisco",
-			name="Cisco",
-			client_id="DIK4A7USDFBT0E6MMR27",
-			secret="test-secret",
-			settings={
-				"server_url": "https://sso-dbbfec7f.sso.duosecurity.com/oidc/DIK4A7USDFBT0E6MMR27"
-			},
-		)
-
-	def test_admin_configured_app_resolves_without_duplicates(self):
-		app = self._create_admin_configured_app()
-
-		with override_settings(
-			SOCIALACCOUNT_PROVIDERS={"openid_connect": {"APPS": []}}
-		):
-			resolved = get_socialaccount_adapter().get_app(None, provider="Cisco")
-
-		self.assertEqual(resolved.pk, app.pk)
-
-	def test_duplicate_admin_and_settings_apps_are_rejected(self):
-		self._create_admin_configured_app()
-		duplicate_settings = {
-			"openid_connect": {
-				"APPS": [
-					{
-						"provider_id": "Cisco",
-						"name": "Cisco",
-						"client_id": "DIK4A7USDFBT0E6MMR27",
-						"secret": "test-secret",
-						"settings": {"server_url": "https://example.test/oidc"},
-					}
-				]
+				"email": "ssouser@cisco.com",
+				"password1": PASSWORD,
+				"password2": PASSWORD,
 			}
-		}
-
-		with override_settings(SOCIALACCOUNT_PROVIDERS=duplicate_settings):
-			with self.assertRaises(MultipleObjectsReturned):
-				get_socialaccount_adapter().get_app(None, provider="Cisco")
-
-	def test_login_url_uses_the_configured_provider_id(self):
-		self.assertEqual(
-			reverse("openid_connect_login", kwargs={"provider_id": "Cisco"}),
-			"/accounts/Cisco/login/",
 		)
+
+		self.assertFalse(form.is_valid())
+		self.assertIn("password reset", " ".join(form.errors["email"]))
+
+	def test_reset_emails_a_user_with_an_unusable_password(self):
+		response = self.client.post(
+			reverse("account_reset_password"),
+			{"email": "ssouser@cisco.com"},
+		)
+
+		self.assertEqual(response.status_code, 302)
+		self.assertEqual(len(mail.outbox), 1)
+		self.assertEqual(mail.outbox[0].to, ["ssouser@cisco.com"])
+
+	def test_reset_link_sets_a_password_that_then_logs_in(self):
+		self.client.post(
+			reverse("account_reset_password"),
+			{"email": "ssouser@cisco.com"},
+		)
+		link = re.search(
+			r"https?://\S+/password/reset/key/\S+",
+			mail.outbox[0].body,
+		).group(0)
+
+		# allauth swaps the key for a session-held one and redirects.
+		response = self.client.get(link, follow=True)
+		self.client.post(
+			response.redirect_chain[-1][0] if response.redirect_chain else link,
+			{"password1": PASSWORD, "password2": PASSWORD},
+		)
+
+		self.user.refresh_from_db()
+		self.assertTrue(self.user.has_usable_password())
+
+		self.client.logout()
+		self.client.post(
+			reverse("account_login"),
+			{"login": "ssouser", "password": PASSWORD},
+		)
+		self.assertEqual(
+			self.client.session.get("_auth_user_id"),
+			str(self.user.pk),
+		)
+

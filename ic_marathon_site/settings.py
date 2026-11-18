@@ -153,9 +153,21 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
-ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_ADAPTER = "ic_marathon_app.social_adapters.CiscoAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "ic_marathon_app.social_adapters.CiscoSocialAccountAdapter"
+
+# Cisco SSO requires a DUO-enrolled device, so local password accounts are also
+# allowed. Signup asks only for a @cisco.com address: CiscoAccountAdapter
+# derives the username from it, so Profile.cec is always the real CEC and the
+# profile wizard never has to ask for it.
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+# The confirmation link is the only proof the signup owns that CEC.
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Cisco Running] "
+ACCOUNT_FORMS = {"signup": "ic_marathon_app.forms.CiscoSignupForm"}
 
 # The Cisco OIDC app is configured either in the Django admin (SocialApp) or
 # through these environment variables - never both, because allauth raises
@@ -251,13 +263,22 @@ MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 PRIVATE_FILE_STORAGE = "ic_marathon_site.storage_backends.PrivateMediaStorage"
 
 
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_FILE_PATH = BASE_DIR + "/emails"
-
 EMAIL_HOST = os.environ.get("MAILGUN_SMTP_SERVER", "")
-EMAIL_PORT = os.environ.get("MAILGUN_SMTP_PORT", "")
+EMAIL_PORT = int(os.environ.get("MAILGUN_SMTP_PORT") or 587)
 EMAIL_HOST_USER = os.environ.get("MAILGUN_SMTP_LOGIN", "")
 EMAIL_HOST_PASSWORD = os.environ.get("MAILGUN_SMTP_PASSWORD", "")
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "Cisco Running <no-reply@ciscorunning.com>"
+)
+
+# Signup confirmation is mandatory, so mail has to actually leave the box when
+# Mailgun is configured. Without it, fall back to writing files locally.
+if EMAIL_HOST:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+    EMAIL_FILE_PATH = os.path.join(BASE_DIR, "emails")
 
 LOGGING = {
     "version": 1,

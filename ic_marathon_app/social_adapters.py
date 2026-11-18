@@ -1,12 +1,22 @@
 """Adapters for Cisco OpenID Connect accounts."""
 
 from allauth.account.adapter import DefaultAccountAdapter
+from allauth.account.utils import user_email, user_username
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+
+from .validators import validate_cec
 
 
 CISCO_PROVIDER_ID = "cisco"
 OIDC_PROVIDER = "openid_connect"
+CISCO_EMAIL_DOMAIN = "cisco.com"
+
+
+def cec_from_email(email):
+    """Return the CEC username encoded in a Cisco corporate address."""
+    return str(email or "").strip().lower().partition("@")[0]
 
 
 def is_cisco_login(sociallogin):
@@ -62,10 +72,46 @@ class CiscoSocialAccountAdapter(DefaultSocialAccountAdapter):
 
 
 class CiscoAccountAdapter(DefaultAccountAdapter):
-    """Disable local account authentication while retaining Cisco signup."""
+    """Local password signup, keyed on a Cisco corporate email address.
+
+    Cisco SSO needs a DUO-enrolled device, so users on an unenrolled phone or
+    laptop create a password account instead. They never type a username: the
+    CEC is derived from the email they sign up with, because
+    ``views.profile_wizard`` copies ``User.username`` into ``Profile.cec`` and
+    a mistyped CEC silently breaks Webex notifications and partner workouts.
+    """
 
     def is_open_for_signup(self, request):
-        return False
+        return True
 
-    def authenticate(self, request, **credentials):
-        return None
+    def clean_email(self, email):
+        """Require a @cisco.com address that yields a usable CEC username.
+
+        This hook is shared by signup, password reset and add-email, so it only
+        validates the shape of the address. Rejecting an address whose CEC is
+        already taken belongs to signup alone (see ``forms.CiscoSignupForm``),
+        because for a password reset an existing account is the whole point.
+        """
+        email = str(super().clean_email(email) or "").strip().lower()
+
+        if email.rpartition("@")[2] != CISCO_EMAIL_DOMAIN:
+            raise ValidationError(
+                "Please sign up with your Cisco email address "
+                f"(<CEC>@{CISCO_EMAIL_DOMAIN})."
+            )
+
+        cec = cec_from_email(email)
+        if not cec:
+            raise ValidationError(
+                f"Please include your CEC username before @{CISCO_EMAIL_DOMAIN}."
+            )
+        # Same rule as Profile.cec, so signup can never create a profile that
+        # the wizard would reject.
+        validate_cec(cec)
+        return email
+
+    def populate_username(self, request, user):
+        """Use the CEC from the email, leaving an SSO-provided username alone."""
+        if user_username(user):
+            return super().populate_username(request, user)
+        user_username(user, cec_from_email(user_email(user)))
